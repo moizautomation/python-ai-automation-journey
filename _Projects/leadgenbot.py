@@ -9,8 +9,18 @@ keys = set()
 with open("data.csv","w",newline="") as file:
     writer = csv.writer(file)
 
+    #make scraper look like a real browser instead of bot
+    headers = {
+    "User-Agent": "Mozilla/5.0"
+    }
+
     url = "https://webscraper.io/test-sites/e-commerce/allinone/computers/laptops" 
-    r = requests.get(url)
+    r = requests.get(url, headers = headers)
+
+    #error handling
+    if r.status_code != 200:
+        print("Failed to fetch page:", r.status_code)
+        exit()
 
     #getting the html thorough beautiful soup
     soup = BeautifulSoup(r.text,"html.parser")
@@ -37,14 +47,16 @@ with open("data.csv","w",newline="") as file:
 
         #finding ratings
         rating = product.find("p",attrs={"data-rating" : True})
-        ratings = rating.attrs["data-rating"] + " " + "stars"
+        ratings = rating.attrs["data-rating"] + " " + "stars" if rating else "N/A"
 
         link = product.find("a",attrs={"href" : True})
+        #making the link safe
+        href = link.attrs["href"] if link else "#"
         #making the complete link of that product
-        full_link = "https://webscraper.io" + link.attrs["href"]
+        full_link = "https://webscraper.io" + href
 
         #Making the unique key to identify each product
-        key = name + "|" + price + "|" + link.attrs["href"]
+        key = name + "|" + price + "|" + href
 
         # if(price != "" and len(name) != 0 and key not in keys):, its cleaner version is below
         if name and price and key not in keys:
