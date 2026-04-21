@@ -1,0 +1,4 @@
+Python is a programming language used for automation.
+BeautifulSoup is used for web scraping.
+Requests is used to fetch web pages.
+RAG stands for Retrieval Augmented Generation.
