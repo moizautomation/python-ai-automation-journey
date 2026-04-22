@@ -1,15 +1,18 @@
 #Learning RAG Manually
-from openai import OpenAI
+# from openai import OpenAI
+import google.generativeai as genai
 import os                       # 1. Add this (helps Python talk to your system)
 from dotenv import load_dotenv
 
 #This line opens and reads your .env file
 load_dotenv()
 
-my_secret_key = os.getenv("OPENAI_API_KEY")
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+model = genai.GenerativeModel('gemini-2.5-flash')
+# my_secret_key = os.getenv("OPENAI_API_KEY")
 
-#logging into OpenAI using secret key
-client = OpenAI(api_key=my_secret_key)
+# #logging into OpenAI using secret key
+# client = OpenAI(api_key=my_secret_key)
 
 
 context = ""
@@ -47,10 +50,9 @@ with open("data.txt","r") as f:
             highest = match
             context = line
 
-# if(highest == 0):
-#      print("No relevant information found")
-# else:
-#     print(context)
+if highest == 0: 
+    print("I couldn't find that info") 
+    exit()
 
 #creating multi-line string prompt
 prompt = f"""
@@ -66,16 +68,19 @@ Answer clearly:
 """
 
 # asking ai to generate an answer
-response = client.chat.completions.create(
-    #choosing gpt model to use
-    model="gpt-4o-mini",
-    messages=[
-         #giving the role and prompt
-        {"role": "user", "content": prompt}
-    ]
-)
+# response = client.chat.completions.create(
+#     #choosing gpt model to use
+#     model="gpt-4o-mini",
+#     messages=[
+#          #giving the role and prompt
+#         {"role": "user", "content": prompt}
+#     ]
+# )
+response = model.generate_content(prompt)
 
 #select the first response and displays it
-print(response.choices[0].message.content)
+# print(response.choices[0].message.content)
+
+print(response.text)
 
     
