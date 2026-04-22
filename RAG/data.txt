@@ -1,4 +1,29 @@
-Python is a programming language used for automation.
-BeautifulSoup is used for web scraping.
-Requests is used to fetch web pages.
-RAG stands for Retrieval Augmented Generation.
+Python is widely used for automation, web scraping, artificial intelligence, APIs, and backend development.
+
+BeautifulSoup is a Python library used to parse HTML and extract useful information from web pages.
+
+Requests is a Python library used to send HTTP requests and fetch web page content from the internet.
+
+Selenium is used for browser automation such as login automation, button clicks, form filling, and handling JavaScript websites.
+
+APIs allow different software applications to communicate with each other by sending requests and receiving responses.
+
+JSON is a common format used in APIs to send and receive structured data between systems.
+
+Web scraping is the process of extracting useful information such as names, prices, and emails from websites.
+
+RAG stands for Retrieval Augmented Generation, where relevant information is retrieved first and then sent to AI for better answers.
+
+OpenAI API allows developers to send prompts to AI models and receive intelligent responses programmatically.
+
+Prompt engineering is the process of writing better instructions so AI can return more accurate and useful outputs.
+
+CSV files are commonly used to store scraped data like product names, prices, ratings, and links in a structured format.
+
+Deduplication means removing repeated or duplicate data so the final dataset stays clean and useful.
+
+FastAPI is a modern Python framework used to build APIs quickly and efficiently for backend development.
+
+Streamlit helps developers turn Python scripts into simple web applications with buttons, inputs, and downloadable outputs.
+
+LangChain is used to connect AI models, prompts, memory, and retrieval systems into complete AI workflows.
