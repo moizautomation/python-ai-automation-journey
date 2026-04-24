@@ -50,15 +50,15 @@ genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 # print(response.text)
 
 #Day 24 task 3 (Forcing ai output reliably)
-model = genai.GenerativeModel(
-    model_name="gemini-2.5-flash",
-    #to control what type of response ai give (eg: short,long etc)
-    system_instruction="You Must reply in bullet points only. Also the answer should never exceed 3 lines and you must always include one example"
-)
+# model = genai.GenerativeModel(
+#     model_name="gemini-2.5-flash",
+#     #to control what type of response ai give (eg: short,long etc)
+#     system_instruction="You Must reply in bullet points only. Also the answer should never exceed 3 lines and you must always include one example"
+# )
 
 
-response = model.generate_content("Explain what Artificial Intelligence is")
-print(response.text)
+# response = model.generate_content("Explain what Artificial Intelligence is")
+# print(response.text)
 
 
 
