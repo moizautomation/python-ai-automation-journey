@@ -60,6 +60,44 @@ genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 # response = model.generate_content("Explain what Artificial Intelligence is")
 # print(response.text)
 
+#Day 25 Task 1 & 2 & 3(Forcing Format and making ai like ai like a data engine)
+model = genai.GenerativeModel(
+    model_name="gemini-2.5-flash",
+    #to control what type of response ai give (eg: short,long etc)
+    system_instruction="""
+You must strictly reply in valid JSON only.
+
+Format:
+{
+  "name": "the name of the topic",
+  "type": "the catogery of the field",
+  "use_cases": [list of practical applications]
+}
+
+Rules:
+"use_cases" must be a list
+no explanations
+no extra text
+all fields must always exist
+no NON-JSON TEXT
+no examples in list
+"""
+)
+
+
+
+response = model.generate_content("Explain what Artificial Intelligence is")
+print(response.text)
+response = model.generate_content("Explain what Artificial Intelligence is")
+print(response.text)
+response = model.generate_content("Explain what Artificial Intelligence is")
+print(response.text)
+response = model.generate_content("Explain what Artificial Intelligence is")
+print(response.text)
+response = model.generate_content("Explain what Artificial Intelligence is")
+print(response.text)
+
+
 
 
 
