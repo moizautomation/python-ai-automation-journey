@@ -10,7 +10,10 @@ load_dotenv()
 
 #logging into GeminiAI using secret  API key
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-model = genai.GenerativeModel('gemini-2.5-flash')
+model = genai.GenerativeModel(
+    model_name="gemini-2.5-flash",
+    system_instruction="Answer only from provided context. If not found, say I don't know."
+)
 # my_secret_key = os.getenv("OPENAI_API_KEY")
 
 # #logging into OpenAI using secret key
@@ -62,13 +65,13 @@ for line in text:
         highest = match
         context = line
 
-if highest == 0: 
-    print("I couldn't find that info") 
-    exit()
+# if highest == 0: 
+#     print("I couldn't find that info") 
+#     exit()
 
 #creating multi-line string prompt
 prompt = f"""
-Use ONLY the information below to answer.
+# Use ONLY the information below to answer.
 
 Context:
 {context}
