@@ -5,6 +5,7 @@
 # Scrape product/business data
 # Store in CSV
 # Handle multiple pages
+#send description to ai to get summary
 import csv
 import requests
 from bs4 import BeautifulSoup

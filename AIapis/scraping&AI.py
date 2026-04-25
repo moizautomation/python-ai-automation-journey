@@ -1,9 +1,9 @@
-#Lead Generation Bot Project
+#Web scraper project (Day 14)
 # Goals:
 # Extract structured data
 # What it should do
 # Scrape product/business data
-# Store in JSON
+# Store in CSV
 # Handle multiple pages
 #send description to ai to get summary
 import google.generativeai as genai
@@ -14,7 +14,6 @@ import os
 import csv
 import requests
 from bs4 import BeautifulSoup
-
 
 load_dotenv()
 
@@ -31,44 +30,48 @@ model = genai.GenerativeModel(
     -Strictly Follow the above format
     """)
 
+
 #empty set to store the data of each product
 #used for duplication check
 keys = set()
 data_list = []
 
-with open("data.json","w") as file:
-    
 
     #make scraper look like a real browser instead of bot
-    headers = {
-    "User-Agent": "Mozilla/5.0"
-    }
+headers = {
+"User-Agent": "Mozilla/5.0"
+}
 
-    url = "https://webscraper.io/test-sites/e-commerce/allinone/computers/laptops" 
-    r = requests.get(url, headers = headers)
+url = "https://webscraper.io/test-sites/e-commerce/allinone/computers/laptops" 
+r = requests.get(url, headers = headers)
 
-    #error handling
-    if r.status_code != 200:
-        print("Failed to fetch page:", r.status_code)
-        exit()
+#error handling
+if r.status_code != 200:
+    print("Failed to fetch page:", r.status_code)
+    exit()
 
-    #getting the html thorough beautiful soup
-    soup = BeautifulSoup(r.text,"html.parser")
-    #finding the main divs containing all product data
-    info = soup.find_all("div",class_="card thumbnail")
+#getting the html thorough beautiful soup
+soup = BeautifulSoup(r.text,"html.parser")
+#finding the main divs containing all product data
+info = soup.find_all("div",class_="card thumbnail")
 
+count = 0
+with open("dataa.json","w") as f:
 
     #going through each div through loop
     for product in info:
         ai_summary = "API Failed"
         #finding the name
+        count += 1
+        if(count == 3):
+            break
         name = product.find("a",class_="title").text
         #stripping garbage values like \n from name
         name = name.strip()
 
         #extracting price
         price = product.find("span",attrs={"itemprop" : "price"}).text
-        
+            
         #extracting description
         desc = product.find("p",class_="description card-text").text
         #stripping garbage values like \n from description
@@ -90,6 +93,8 @@ with open("data.json","w") as file:
         # if(price != "" and len(name) != 0 and key not in keys):, its cleaner version is below
         if name and price and key not in keys:
             keys.add(key)
+            #Giving the description to ai
+            #try to send request to ai
             try:
                 response = model.generate_content(desc)
                 ai_summary = response.text
@@ -103,4 +108,11 @@ with open("data.json","w") as file:
             "description" : desc,
             "ai-summary" : ai_summary
         })
-json.dump(data_list,file)
+json.dump(data_list,f)
+        
+                
+        
+            
+        
+
+
