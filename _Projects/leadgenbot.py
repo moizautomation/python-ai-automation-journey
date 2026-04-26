@@ -6,6 +6,7 @@
 # Store in JSON
 # Handle multiple pages
 #send description to ai to get summary
+
 import google.generativeai as genai
 import time
 import json
@@ -38,12 +39,10 @@ data_list = []
 
 with open("data.json","w") as file:
     
-
     #make scraper look like a real browser instead of bot
     headers = {
     "User-Agent": "Mozilla/5.0"
     }
-
     url = "https://webscraper.io/test-sites/e-commerce/allinone/computers/laptops" 
     r = requests.get(url, headers = headers)
 
@@ -92,7 +91,7 @@ with open("data.json","w") as file:
             keys.add(key)
             try:
                 response = model.generate_content(desc)
-                ai_summary = response.text
+                ai_summary = response.text.strip()
             #if not possible then
             #Exception = any error, store it in e and print it
             except Exception as e:
@@ -103,4 +102,4 @@ with open("data.json","w") as file:
             "description" : desc,
             "ai-summary" : ai_summary
         })
-json.dump(data_list,file)
+    json.dump(data_list,file)
