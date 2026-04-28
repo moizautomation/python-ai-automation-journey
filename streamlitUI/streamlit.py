@@ -45,3 +45,7 @@ import streamlit as st
 # if(st.button("enter")):
 #     st.text(url)
 #     st.text(mode)
+
+#st.text_area #multi-line text input
+#st.select_box() #dropdown
+#st.spinner() # a loading indicator, used eg: when ai is processing.

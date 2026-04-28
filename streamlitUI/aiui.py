@@ -57,33 +57,13 @@ headers = {
     "User-Agent": "Mozilla/5.0"
 }
 #Phase 1 - Input Validation and Mode setting
-url = st.text_input("Enter the Target URL: ")
-#remove unnecesary characters from the url like \n
-url = url.strip()
-
+url = st.text_area("Enter the Target URL: ")
 
 mode = st.selectbox("Choose mode",["summary","keypoint","sentiment"])
 if(st.button("Enter")):
-
-    #if user enter string instead of number then
-    #we try to convert it into int
-    # try:
-    #     choice = int(choice)
-    #     if(choice == 1):
-    #         mode = "Summary"
-    #     elif(choice == 2):
-    #         mode = "Key Points"
-    #     elif(choice == 3):
-    #         mode = "Sentiment"
-    #     else:
-    #         mode = "Summary"  
-    #     #if cannot be converted
-    #     #then set default mode to summary
-    # except:
-    #     mode = "Summary"
-    # user_input = url + mode
-
-        #check if url is empty
+    #check if url is empty
+    #remove unnecesary characters from the url like \n
+    url = url.strip()
     if(len(url) == 0):
         print("Input cannot be empty")
         st.stop()
@@ -142,13 +122,37 @@ if(st.button("Enter")):
     aires = "API Failed"
 
     #Phase 5 - Write your JSON data to a json file
-    with open("data.json","a") as file:
+    with open("data.json","w") as file:
         #try to send the prompt to AI API
         try:
-            response = model.generate_content(prompt)
-            st.success("Processing....")
-            st.write(response.text)
-            aires = response.text.strip()
+            with st.spinner("Processing..."):
+                response = model.generate_content(prompt)
+                aires = response.text.strip()
+            st.success("Success")
+            st.header("AI Result")
+            st.divider()
+            if(mode == "summary"):
+                st.subheader(f"Mode: {mode}")
+                st.divider();
+                st.markdown("**Summary**")
+                st.write("Output")
+                st.write(response.text)
+            elif(mode == "key points"):
+                st.subheader("Mode: ",mode)
+                st.divider();
+                st.markdown("""
+                            - Point 1
+                            - Point 2
+                            - Point 3
+                            """)
+                st.write("Output")
+                st.write(response.text)
+            elif(mode == "sentiment"):
+                st.subheader("Mode: ",mode)
+                st.divider();
+                st.markdown("**Sentiment**")
+                st.write("Output")
+                st.write(response.text)
 
             #add the result of that response in list
             data_list.append({
