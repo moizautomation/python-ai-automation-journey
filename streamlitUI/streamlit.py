@@ -51,24 +51,25 @@ import streamlit as st
 #st.spinner() # a loading indicator, used eg: when ai is processing.
 
 #Day 31 (learning streamlit UI)
-st.header("StreamLit UI App")
-st.divider()
-st.subheader("Input section")
-st.divider()
-url = st.text_area("Enter the URL: ")
-url = url.strip()
-mode = st.selectbox("Choose Mode",["summary","key points","sentiment"])
-button = st.button("Enter")
-st.subheader("Output Section")
-st.divider()
-if(button):
-    if(len(url) == 0):
-        st.error("URL cannot be Empty")
-        st.stop()
-    if not(("http" in url or "https" in url) and ".com" in url):
-        st.error("Invalid URL")
-        st.stop()
-    else:
-        with st.spinner("Processing"):
-            st.success("Success")
-            st.write(url + " " + mode)
+# st.header("StreamLit UI App")
+# st.divider()
+# st.subheader("Input section")
+# st.divider()
+# url = st.text_area("Enter the URL: ")
+# url = url.strip()
+# mode = st.selectbox("Choose Mode",["summary","key points","sentiment"])
+# button = st.button("Enter")
+# st.subheader("Output Section")
+# st.divider()
+# if(button):
+#     if(len(url) == 0):
+#         st.error("URL cannot be Empty")
+#         st.stop()
+#     if not(("http" in url or "https" in url) and ".com" in url):
+#         st.error("Invalid URL")
+#         st.stop()
+#     else:
+#         with st.spinner("Processing"):
+#             st.success("Success")
+#             st.write(url + " " + mode)
+
