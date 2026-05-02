@@ -20,6 +20,7 @@ import streamlit as st
 load_dotenv()
 
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+
 #Phase 4 - Control AI output and restrict it to only give in strict JSON format
 model = genai.GenerativeModel(
     model_name="gemini-2.5-flash",
@@ -55,21 +56,28 @@ model = genai.GenerativeModel(
 headers = {
     "User-Agent": "Mozilla/5.0"
 }
+
 #Phase 1 - Input Validation and Mode setting
 st.header("Web AI Analyzer")
 st.divider()
+
 st.subheader("Input")
 st.divider()
-url = st.text_area("Enter the Target URL: ")
 
+url = st.text_area("Enter the Target URL: ")
 mode = st.selectbox("Choose mode",["Summary","Key Points","Sentiment"])
+
 button = st.button("Enter")
+
 st.subheader("Output")
 st.divider()
+
 if(button):
     #check if url is empty
     #remove unnecesary characters from the url like \n
     url = url.strip()
+    key = url + mode
+
     if(len(url) == 0):
         print("Input cannot be empty")
         st.stop()
@@ -81,71 +89,105 @@ if(button):
         #error handling
         try:
             with st.spinner("Processing"):
-                #send the request to the website
-                r = requests.get(url, headers = headers)
-                soup = BeautifulSoup(r.text,"html.parser")
-                #returns a list of all p tags
-                para = soup.find_all("p")
+                #if user session cache not created
+                if "cache" not in st.session_state:
+                    #create an empty dict for it
+                    st.session_state.cache = {}
 
-                heading1 = soup.find_all("h1")
-                heading2 = soup.find_all("h2")
-                heading3 = soup.find_all("h3")
+                #if our key is in the cache
+                if key in st.session_state.cache:
+                    #reuse the old response
+                    response_text = st.session_state.cache[key]
+                #else call api again else
+                else:
+                    #send the request to the website
+                    r = requests.get(url, headers = headers)
+                    soup = BeautifulSoup(r.text,"html.parser")
+                    #returns a list of all p tags
+                    para = soup.find_all("p")
 
-                heading4 = soup.find_all("h4")
-                heading5 = soup.find_all("h5")
-                heading6 = soup.find_all("h6")
+                    heading1 = soup.find_all("h1")
+                    heading2 = soup.find_all("h2")
+                    heading3 = soup.find_all("h3")
 
-                #merge all the headings text
-                headings = heading1 + heading2 + heading3 + heading4 + heading5 + heading6
-                #merge all the text
-                merge_data = para + headings
+                    heading4 = soup.find_all("h4")
+                    heading5 = soup.find_all("h5")
+                    heading6 = soup.find_all("h6")
 
-                cleaned = ""
-                for data in merge_data:
-                    cleaned += " " + data.text.strip() + " \n"
-                prompt = f"""
+                    #merge all the headings text
+                    headings = heading1 + heading2 + heading3 + heading4 + heading5 + heading6
+                    #merge all the text
+                    merge_data = para + headings
 
-                Text:
-                {cleaned}
+                    cleaned = ""
+                    for data in merge_data:
+                        cleaned += " " + data.text.strip() + " \n"
+                    prompt = f"""
 
-                Mode:
-                {mode}
+                    Text:
+                    {cleaned}
 
-                IMPORTANT:
-                - If mode is keypoint, return ONLY meaningful points
-                - Do not return empty strings
-                - Each point must be based on actual text
+                    Mode:
+                    {mode}
 
-                """
+                    IMPORTANT:
+                    - If mode is keypoint, return ONLY meaningful points
+                    - Do not return empty strings
+                    - Each point must be based on actual text
 
-                data_list = []
-                aires = "API Failed"
-                #Phase 3 - Sending cleaned data to AI
-                #cleaning the merged data by removing
-                #unnecassory characters and spaces
-                response = model.generate_content(prompt)
-                aires = response.text.strip()
-                st.success("Success")
-                st.header("AI Result")
-                st.divider()
+                    """
+                    
+
+                    #Phase 3 - Sending cleaned data to AI
+                    #cleaning the merged data by removing
+                    #unnecassory characters and spaces
+                    data_list = []
+                    aires = "API Failed"
+
+                    response = model.generate_content(
+                        prompt,
+                        generation_config={
+                            "max_output_tokens" : 150,
+                        })
+                    #stores the response as a string
+                    response_text = response.text
+                    st.session_state.cache[key] = response_text
+
+                    aires = response.text.strip()
+                    st.success("Fetched From API")
+                    st.header("AI Result")
+                    st.divider()
+
                 if(mode == "Summary"):
+                    st.info("Cost per Request: 0.001$")
+
                     st.subheader(f"Mode: {mode}")
-                    st.divider();
+                    st.divider()
+
                     st.markdown("**Summary**")
                     st.write("Output")
-                    st.write(response.text)
+
+                    st.write(response_text)
                 elif(mode == "Key Points"):
+                    st.info("Cost per Request: 0.002$")
+
                     st.subheader(f"Mode: {mode}")
-                    st.divider();
+                    st.divider()
+
                     st.markdown("**Key Points**")
                     st.write("Output")
-                    st.write(response.text)
+
+                    st.write(response_text)
                 elif(mode == "Sentiment"):
+                    st.info("Cost per Request: 0.001$")
+
                     st.subheader(f"Mode: {mode}")
-                    st.divider();
+                    st.divider()
+
                     st.markdown("**Sentiment**")
                     st.write("Output")
-                    st.write(response.text)
+
+                    st.write(response_text)
 
                     #add the result of that response in list
                 data_list.append({
@@ -153,8 +195,9 @@ if(button):
                 "mode" : mode,
                 "ai-result" : aires
                 })
-        except:
+        except Exception as e:
             st.error("Website cannot be reached")
+            st.write(e)
             st.stop()
     else:
         st.error("Invalid URL")
