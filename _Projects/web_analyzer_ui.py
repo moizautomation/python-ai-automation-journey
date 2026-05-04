@@ -65,142 +65,82 @@ st.subheader("Input")
 st.divider()
 
 url = st.text_area("Enter the Target URL: ")
-mode = st.selectbox("Choose mode",["Summary","Key Points","Sentiment"])
+uploaded_file = st.file_uploader("Upload your File: ",type=["txt"])
 
+mode = st.selectbox("Choose mode",["Summary","Key Points","Sentiment"])
 button = st.button("Enter")
 
 st.subheader("Output")
 st.divider()
 
-if(button):
-    #check if url is empty
-    #remove unnecesary characters from the url like \n
-    url = url.strip()
-    key = url + mode
 
-    if(len(url) == 0):
-        print("Input cannot be empty")
-        st.stop()
-    a = "http"
-    b = "https"
-
-    #check if url is valid
-    if url.startswith("http"):
-        #error handling
-        try:
-            with st.spinner("Processing"):
-                #if user session cache not created
-                if "cache" not in st.session_state:
-                    #create an empty dict for it
-                    st.session_state.cache = {}
-
-                #if our key is in the cache
-                if key in st.session_state.cache:
-                    #reuse the old response
-                    response_text = st.session_state.cache[key]
-                #else call api again else
-                else:
-                    #send the request to the website
-                    r = requests.get(url, headers = headers)
-                    soup = BeautifulSoup(r.text,"html.parser")
-                    #returns a list of all p tags
-                    para = soup.find_all("p")
-
-                    heading1 = soup.find_all("h1")
-                    heading2 = soup.find_all("h2")
-                    heading3 = soup.find_all("h3")
-
-                    heading4 = soup.find_all("h4")
-                    heading5 = soup.find_all("h5")
-                    heading6 = soup.find_all("h6")
-
-                    #merge all the headings text
-                    headings = heading1 + heading2 + heading3 + heading4 + heading5 + heading6
-                    #merge all the text
-                    merge_data = para + headings
-
-                    cleaned = ""
-                    for data in merge_data:
-                        cleaned += " " + data.text.strip() + " \n"
-                    prompt = f"""
-
-                    Text:
-                    {cleaned}
-
-                    Mode:
-                    {mode}
-
-                    IMPORTANT:
-                    - If mode is keypoint, return ONLY meaningful points
-                    - Do not return empty strings
-                    - Each point must be based on actual text
-
-                    """
-                    
-
-                    #Phase 3 - Sending cleaned data to AI
-                    #cleaning the merged data by removing
-                    #unnecassory characters and spaces
-                    data_list = []
-                    aires = "API Failed"
-
-                    response = model.generate_content(
-                        prompt,
-                        generation_config={
-                            "max_output_tokens" : 150,
-                        })
-                    #stores the response as a string
-                    response_text = response.text
-                    st.session_state.cache[key] = response_text
-
-                    aires = response.text.strip()
-                    st.success("Fetched From API")
-                    st.header("AI Result")
-                    st.divider()
-
-                if(mode == "Summary"):
-                    st.info("Cost per Request: 0.001$")
-
-                    st.subheader(f"Mode: {mode}")
-                    st.divider()
-
-                    st.markdown("**Summary**")
-                    st.write("Output")
-
-                    st.write(response_text)
-                elif(mode == "Key Points"):
-                    st.info("Cost per Request: 0.002$")
-
-                    st.subheader(f"Mode: {mode}")
-                    st.divider()
-
-                    st.markdown("**Key Points**")
-                    st.write("Output")
-
-                    st.write(response_text)
-                elif(mode == "Sentiment"):
-                    st.info("Cost per Request: 0.001$")
-
-                    st.subheader(f"Mode: {mode}")
-                    st.divider()
-
-                    st.markdown("**Sentiment**")
-                    st.write("Output")
-
-                    st.write(response_text)
-
-                    #add the result of that response in list
-                data_list.append({
-                "url" : url,
-                "mode" : mode,
-                "ai-result" : aires
-                })
-        except Exception as e:
-            st.error("Website cannot be reached")
-            st.write(e)
-            st.stop()
-    else:
-        st.error("Invalid URL")
+if button:
+    #Input Validation
+    if(len(url) != 0 and uploaded_file is not None):
+        st.error("Error! Cannot use both URL and File Upload at the same time")
         st.stop()
 
+    if(len(url) == 0 and uploaded_file is None):
+        st.error("Error! Both cannot be empty")
+        st.stop()
 
+    cleaned = ""
+    key = ""
+
+    with st.spinner("Processing...."):
+        if(len(url) > 0):
+            url = url.strip()
+            key = url + mode
+            if not url.startswith("http"):
+                st.error("Invalid URL")
+                st.stop()
+            try:
+                r = requests.get(url, headers=headers)
+                soup = BeautifulSoup(r.text, "html.parser")
+
+                data = soup.find_all(["p", "h1", "h2", "h3", "h4", "h5", "h6"])
+
+                for el in data:
+                    cleaned += el.text.strip() + "\n"
+            except:
+                st.error("Website cannot be reached")
+                st.stop()
+        elif uploaded_file is not None:
+                cleaned = uploaded_file.read().decode("utf-8").strip()
+
+                key = cleaned[:100] + mode
+
+        if "cache" not in st.session_state:
+            st.session_state.cache = {}
+        
+        if key in st.session_state.cache:
+            response_text = st.session_state.cache[key]
+        else:
+            prompt = f"""
+    Text:
+    {cleaned}
+
+    Mode:
+    {mode}
+
+    IMPORTANT:
+    Return ONLY valid JSON.
+    """
+
+            response = model.generate_content(
+                prompt,
+                generation_config={"max_output_tokens": 200}
+            )
+
+            response_text = response.text
+            st.session_state.cache[key] = response_text
+
+        #Output
+        st.subheader("AI Result")
+        st.write(response_text)
+        st.download_button(
+            label = "Download Results",
+            data = response_text,
+            file_name = "ai_result.json",
+            mime="application/json"
+        )
