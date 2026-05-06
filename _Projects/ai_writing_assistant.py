@@ -32,61 +32,89 @@ model = genai.GenerativeModel(
     - If you have no information on topic, simply return no result found.
     """)
 
-st.title("AI Writing Assistant")
-st.divider()
 
-st.header("Input")
-st.divider()
-task = st.selectbox("Task Selector",["Description","Email","Social Post","Blog Intro"])
 
-topic = st.text_input("Enter the topic: ")
+page = st.sidebar.selectbox("Navigation",["HomePage","Writing Assistant","Instructions"])
+if(page == "HomePage"):
+    st.title("Home Page")
+    st.header("Welcome To AI Writing Assistant")
+    
+    st.divider()
+    st.write("This is the homepage of the Writing Assistant.\nYou can use this tool to write description,emails etc.\nYou can also select the tone, word count and topic.")
 
-text = st.text_area("Enter your text: ")
+if(page == "Writing Assistant"):
+    st.title("AI Writing Assistant")
+    st.divider()
 
-length = st.text_input("Enter the length: ")
+    st.header("Input")
+    st.divider()
+    task = st.selectbox("Task Selector",["Description","Email","Social Post","Blog Intro"])
 
-tone = st.selectbox("Tone",["Friendly","Professional","Casual"])
+    topic = st.text_input("Enter the topic: ")
 
-button = st.button("Enter")
+    text = st.text_area("Enter your text: ")
 
-if len(topic) == 0 or len(text) == 0 or len(length) == 0:
-    st.error("Error! All fields are mandatory")
+    length = st.selectbox("Length",["0-100 Words","150-200 Words","300-400 words"])
 
-if "cache" not in st.session_state:
-    st.session_state.cache = {}
-# cleaned = text[:200]
-key = topic + task
-if(button):
-    with st.spinner(f"Writing the {task}"):
-        st.header("AI Result")
-        st.divider() 
-        prompt = f"""
-        Task:
-        {task}
+    tone = st.selectbox("Tone",["Friendly","Professional","Casual"])
 
-        Topic:
-        {topic}
+    button = st.button("Enter")
 
-        Text:
-        {text}
 
-        length:
-        {length}
+    if "cache" not in st.session_state:
+        st.session_state.cache = {}
+    # cleaned = text[:200]
+    key = topic + task + tone + length + text[:200]
+    if(button):
+        with st.spinner(f"Writing the {task}"):
+            st.header("AI Result")
+            st.divider()
 
-        Tone:
-        {tone}
-        """
-        
-        if key not in st.session_state.cache:
-            response = model.generate_content(prompt)
-            st.session_state.cache["key"] = response.text
-            response_text = response.text
-        else:
-            response_text = st.session_state.cache["key"]
+            if len(topic) == 0 or len(text) == 0:
+                st.error("Error! All fields are mandatory")
+                st.stop() 
 
-        st.write(response_text)
+            if key in st.session_state.cache:
+                response_text = st.session_state.cache[key]
+            else:
+                prompt = f"""
+                Task:
+                {task}
 
-            
+                Topic:
+                {topic}
+
+                Text:
+                {text}
+
+                length:
+                {length}
+
+                Tone:
+                {tone}
+                """
+                
+                response = model.generate_content(
+                        prompt,
+                        generation_config={"max_output_tokens": 200})
+                response_text = response.text
+                st.session_state.cache[key] = response_text
+
+                st.write(response_text)
+
+
+if(page == "Instructions"):
+    st.title("Instructions")
+    st.header("How to use the Tool")
+    
+    st.write("1. Select the Task eg: write Description, email etc")
+    st.write("2. Enter the topic")
+    st.write("3. Enter your text")
+    st.write("4. Choose the word count you want")
+    st.write("5. Select the tone")
+    st.write("6. You can also download the result")
+
+                
 
 
 
