@@ -73,3 +73,5 @@ import streamlit as st
 #             st.success("Success")
 #             st.write(url + " " + mode)
 
+
+# st.info("Money Per Request: 0.002$")
