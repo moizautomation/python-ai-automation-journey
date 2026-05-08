@@ -83,11 +83,10 @@ elif(choice == "AI Lead Intelligence Tool"):
                     continue
                 
                 if not url.startswith("http"):
-                    st.error("Error! The URL is Invalid")
-                    st.stop()
+                    url = "https://" + url
                 
                 try:
-                    r = requests.get(url,headers=header)
+                    r = requests.get(url,headers=header,timeout=10)
 
                     info = BeautifulSoup(r.text,"html.parser")
 
@@ -98,7 +97,8 @@ elif(choice == "AI Lead Intelligence Tool"):
                     
                     key = url + cleaned
                     url_data.append(cleaned)
-
+                    
+                    cleaned = cleaned[:5000]
                     if key in st.session_state.cache:
                         response_text = st.session_state.cache[key]
                     else:
@@ -111,20 +111,23 @@ elif(choice == "AI Lead Intelligence Tool"):
                         st.session_state.cache[key] = response_text
                     
                     #to store data of a single company
-                    # st.write(response_text)
+                    st.subheader(url)
+                    st.write(response_text)
                     report = {}
                     report.update({"URL" : url, "AI Analysis" : response_text})
                     all_reports.append(report)
                     
-                    st.download_button(
-                        label = "Download Results",
-                        data = all_reports,
-                        file_name = "ai_result.json",
-                        mime="text/plain"
-                    )
-                except:
-                    st.error(f"Error! Website cannot be Reached{url}")
-                    st.stop()
+                    #json dumps convert python text into json
+                    json_data = json.dumps(all_reports,indent = 4)
+                except Exception as e:
+                    st.error(f"Error for {url}: {e}")
+                    continue
+            st.download_button(
+                label = "Download Results",
+                data = json_data,
+                file_name = "ai_result.json",
+                mime="application/json"
+            )
 
 elif(choice == "Instructions"):
     st.title("Instructions")
