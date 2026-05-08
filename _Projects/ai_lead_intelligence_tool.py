@@ -34,82 +34,108 @@ model = genai.GenerativeModel(
         Customer pain points they solve (2 lines only)
         Possible sales/marketing angle (very important for outreach)"""
     )
+choice = st.sidebar.selectbox("Navigation",["HomePage","AI Lead Intelligence Tool","Instructions"])
 
-url_data = []
+if(choice == "HomePage"):
+    st.title("HomePage")
+    st.header("AI Lead Intelligence Tool")
+    st.divider()
 
-st.title("AI Lead Intelligence Tool")
+    st.write("This is a Lead Intelligence AI Tool")
+    st.write("You just need to paste the list of URL")
+    st.write("It will tell you all the data about each url")
 
-st.header("Input")
-st.divider()
+elif(choice == "AI Lead Intelligence Tool"):
+    url_data = []
+    #to store data of multiple comapnies
+    all_reports = []
 
-urls = st.text_area("Paste the Companies URL Below:")
+    st.title("AI Lead Intelligence Tool")
 
-button = st.button("Analyze Companies")
+    st.header("Input")
+    st.divider()
 
-st.header("Analyzed Results")
-st.divider()
+    urls = st.text_area("Paste the Companies URL Below:")
 
-if "cache" not in st.session_state:
-    st.session_state.cache = {}
+    button = st.button("Analyze Companies")
 
-if button:
-    if(len(urls) == 0):
-        st.error("URL Field cannot be empty")
-        st.stop()
-        
-    with st.spinner("Analyzing your Competitors"):
-        urls = urls.split("\n")
+    st.header("Analyzed Results")
+    st.divider()
 
-        for url in urls:
-            key = ""
-            cleaned = ""
+    if "cache" not in st.session_state:
+        st.session_state.cache = {}
 
-            url = url.strip()
+    if button:
+        if(len(urls) == 0):
+            st.error("URL Field cannot be empty")
+            st.stop()
             
-            if(len(url) == 0):
-                continue
-            
-            if not url.startswith("http"):
-                st.error("Error! The URL is Invalid")
-                st.stop()
-            
-            try:
-                r = requests.get(url,headers=header)
+        with st.spinner("Analyzing your Competitors"):
+            urls = urls.split("\n")
 
-                info = BeautifulSoup(r.text,"html.parser")
+            for url in urls:
+                key = ""
+                cleaned = ""
 
-                data = info.find_all(["h1","h2","h3","h4","h5","h6","p"])
+                url = url.strip()
                 
-                for el in data:
-                    cleaned += el.text.strip() + "\n"
+                if(len(url) == 0):
+                    continue
                 
-                key = url + cleaned
-                url_data.append(cleaned)
-                st.write(f"Company data: {cleaned}")
+                if not url.startswith("http"):
+                    st.error("Error! The URL is Invalid")
+                    st.stop()
+                
+                try:
+                    r = requests.get(url,headers=header)
 
-                if key in st.session_state.cache:
-                    response_text = st.session_state.cache[key]
-                else:
-                    prompt = f"""
-                    Data:
-                    {cleaned}
-                    """
-                    response = model.generate_content(prompt)
-                    response_text = response.text
-                    st.session_state.cache[key] = response_text
+                    info = BeautifulSoup(r.text,"html.parser")
 
-                st.write(response_text)
+                    data = info.find_all(["h1","h2","h3","h4","h5","h6","p"])
+                    
+                    for el in data:
+                        cleaned += el.text.strip() + "\n"
+                    
+                    key = url + cleaned
+                    url_data.append(cleaned)
 
-                st.download_button(
-                    label = "Download Results",
-                    data = response_text,
-                    file_name = "ai_result.json",
-                    mime="text/plain"
-                )
+                    if key in st.session_state.cache:
+                        response_text = st.session_state.cache[key]
+                    else:
+                        prompt = f"""
+                        Data:
+                        {cleaned}
+                        """
+                        response = model.generate_content(prompt)
+                        response_text = response.text
+                        st.session_state.cache[key] = response_text
+                    
+                    #to store data of a single company
+                    # st.write(response_text)
+                    report = {}
+                    report.update({"URL" : url, "AI Analysis" : response_text})
+                    all_reports.append(report)
+                    
+                    st.download_button(
+                        label = "Download Results",
+                        data = all_reports,
+                        file_name = "ai_result.json",
+                        mime="text/plain"
+                    )
+                except:
+                    st.error(f"Error! Website cannot be Reached{url}")
+                    st.stop()
 
-            except:
-                st.error(f"Error! Website cannot be Reached{url}")
-                st.stop()
+elif(choice == "Instructions"):
+    st.title("Instructions")
+    st.header("How to use the Tool")
+    st.divider()
+
+    st.write("1. User pastes a list of company names or URLs")
+    st.write("2. Tool scrapes each company's website automatically")
+    st.write("3. AI analyzes each one: what they do, who they target, pain points")
+    st.write("4. Output: a clean report per company — ready to use for outreach")
+    st.write("5. Streamlit UI with download button for the full report")
 
 
 
