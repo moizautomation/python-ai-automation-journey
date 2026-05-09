@@ -5,12 +5,8 @@
 # User can copy or download the result
 
 import google.generativeai as genai
-import time
-import json
 from dotenv import load_dotenv 
 import os
-import requests
-from bs4 import BeautifulSoup
 import streamlit as st
 
 load_dotenv()
