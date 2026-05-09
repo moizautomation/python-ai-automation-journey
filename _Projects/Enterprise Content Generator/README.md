@@ -53,7 +53,7 @@ No writers block. No agency fees. Just content, instantly.
 
 This tool is available as a hosted service — no setup, no code, just results.
 
-> 📩 **Interested?** Reach out at: `abdulmoiz00201@gmail.com`
+> 📩 **Interested?** Reach out at: `abdull.devv@gmail.com`
 
 ---
 
