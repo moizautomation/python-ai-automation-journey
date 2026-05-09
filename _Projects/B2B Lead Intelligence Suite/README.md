@@ -1,6 +1,12 @@
 # 🔍 AI Lead Intelligence Tool
 
 > Paste a list of URLs. Get instant business intelligence on every company — ready for outreach.
+
+![Python](https://img.shields.io/badge/Python-3.9+-blue?style=flat-square&logo=python)
+![Streamlit](https://img.shields.io/badge/Streamlit-UI-red?style=flat-square&logo=streamlit)
+![Gemini](https://img.shields.io/badge/Google-Gemini_2.5_Flash-orange?style=flat-square&logo=google)
+![Status](https://img.shields.io/badge/Status-Available-brightgreen?style=flat-square)
+
 ---
 
 ## 📌 What It Does
@@ -43,7 +49,7 @@ For every company URL, the tool returns:
 
 This tool is available as a hosted service — no setup, no code, just results.
 
-> 📩 **Interested?** Reach out at: `your@email.com`
+> 📩 **Interested?** Reach out at: `abdull.devv@gmail.com`
 
 ---
 
@@ -51,11 +57,11 @@ This tool is available as a hosted service — no setup, no code, just results.
 
 | Tool | Purpose |
 |------|---------|
-| Streamlit | Web UI |
-| Google Gemini 2.5 Flash | AI analysis |
-| BeautifulSoup4 | Web scraping |
-| Requests | HTTP fetching |
-| python-dotenv | API key management |
+| `Streamlit` | Web UI |
+| `Google Gemini 2.5 Flash` | AI analysis |
+| `BeautifulSoup4` | Web scraping |
+| `Requests` | HTTP fetching |
+| `python-dotenv` | API key management |
 
 ---
 
@@ -66,7 +72,6 @@ This tool is available as a hosted service — no setup, no code, just results.
 3. Click **Analyze Companies**
 4. View the AI-generated report for each company
 5. Click **Download Results** to export everything as `ai_result.json`
-
 
 ---
 
