@@ -24,17 +24,30 @@ genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
 model = genai.GenerativeModel(
     model_name="gemini-2.5-flash",
-    system_instruction="""You are a strict business lead intelligence tool\
-        You are going to recieve data about company.
-        You will have to do the following:
-        Format:
-        What the company does (simple explanation of 2-3 lines)
-        Target audience (two words only)
-        Main product/service  (two words only)
-        Customer pain points they solve (2 lines only)
-        Possible sales/marketing angle (very important for outreach)"""
-    )
+    system_instruction="""You are a business intelligence assistant.
+if there is very less or no content just return No Useful content.
+Analyze the company data below and respond strictly in JSON:
+
+{
+ "what_the_company_does": "",
+  "target_audience": "",
+  "main_product_or_service": "",
+  "customer_pain_points": "",
+  "sales_or_marketing_angle": ""
+}
+Rules:
+- Be concise
+- No extra text
+- Return ONLY a valid JSON object
+- Use exactly these keys
+- Do not add extra fields
+- Do not include explanation or text outside JSON
+- no ```json
+- no backticks"""
+)
+
 choice = st.sidebar.selectbox("Navigation",["HomePage","AI Lead Intelligence Tool","Instructions"])
+visited_url = []
 
 if(choice == "HomePage"):
     st.title("HomePage")
@@ -74,19 +87,26 @@ elif(choice == "AI Lead Intelligence Tool"):
             urls = urls.split("\n")
 
             for url in urls:
-                key = ""
                 cleaned = ""
 
                 url = url.strip()
-                
+                if url in visited_url:
+                    continue
+
                 if(len(url) == 0):
                     continue
+
+                visited_url.append(url)
                 
                 if not url.startswith("http"):
                     url = "https://" + url
                 
                 try:
                     r = requests.get(url,headers=header,timeout=10)
+
+                    if r.status_code != 200:
+                        st.error(f"Website {url} cannot be reached Error: {r.status_code}")
+                        continue
 
                     info = BeautifulSoup(r.text,"html.parser")
 
@@ -95,7 +115,10 @@ elif(choice == "AI Lead Intelligence Tool"):
                     for el in data:
                         cleaned += el.text.strip() + "\n"
                     
-                    key = url + cleaned
+                    if len(cleaned) < 50:
+                        st.error(f"Not Enough Content found for: {url}")
+                        continue
+                    key = url.strip().lower()
                     url_data.append(cleaned)
                     
                     cleaned = cleaned[:5000]
@@ -139,6 +162,5 @@ elif(choice == "Instructions"):
     st.write("3. AI analyzes each one: what they do, who they target, pain points")
     st.write("4. Output: a clean report per company — ready to use for outreach")
     st.write("5. Streamlit UI with download button for the full report")
-
 
 
