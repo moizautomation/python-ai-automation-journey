@@ -1,6 +1,12 @@
 # 🤖 AI Lead Generation Bot
 
 > Scrape any webpage. Extract structured intelligence. Export to JSON — instantly.
+
+![Python](https://img.shields.io/badge/Python-3.9+-blue?style=flat-square&logo=python)
+![Gemini](https://img.shields.io/badge/Google-Gemini_2.5_Flash-orange?style=flat-square&logo=google)
+![CLI](https://img.shields.io/badge/Interface-CLI-lightgrey?style=flat-square)
+![Status](https://img.shields.io/badge/Status-Available-brightgreen?style=flat-square)
+
 ---
 
 ## 📌 What It Does
