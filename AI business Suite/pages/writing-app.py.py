@@ -34,103 +34,80 @@ model = genai.GenerativeModel(
 
 
 
-page = st.sidebar.selectbox("Navigation",["HomePage","Writing Assistant","Instructions"])
-if(page == "HomePage"):
-    st.title("Home Page")
-    st.header("Welcome To AI Writing Assistant")
+
+st.title("AI Writing Assistant")
+st.divider()
+
+if st.session_state.usage_count >= 3:
+    st.warning("🔒 **Demo limit reached.**")
+    st.info("To get full access or a custom version for your business, contact me:")
+    st.markdown("📩 **Email:** abdull.devv@gmail.com")
+    st.stop()
+
+
+st.header("Input")
+st.divider()
+task = st.selectbox("Task Selector",["Description","Email","Social Post","Blog Intro"])
+
+topic = st.text_input("Enter the topic: ")
+
+text = st.text_area("Enter your text: ")
+
+length = st.selectbox("Length",["0-100 Words","150-200 Words","300-400 words"])
+
+tone = st.selectbox("Tone",["Friendly","Professional","Casual"])
+
+button = st.button("Enter")
+
+
+if "cache" not in st.session_state:
+    st.session_state.cache = {}
+# cleaned = text[:200]
+key = topic + task + tone + length + text[:200]
+
+if(button):
+    if len(topic) == 0 or len(text) == 0:
+            st.error("Error! All fields are mandatory")
+            st.stop()
     
-    st.divider()
-    st.write("This is the homepage of the Writing Assistant.\nYou can use this tool to write description,emails etc.\nYou can also select the tone, word count and topic.")
+    st.session_state.usage_count += 1
 
-if(page == "Writing Assistant"):
-    st.title("AI Writing Assistant")
-    st.divider()
+    with st.spinner(f"Writing the {task}"):
+        st.header("AI Result")
+        st.divider()
+        if key in st.session_state.cache:
+            response_text = st.session_state.cache[key]
+        else:
+            prompt = f"""
+            Task:
+            {task}
 
-    if st.session_state.usage_count >= 3:
-        st.warning("🔒 **Demo limit reached.**")
-        st.info("To get full access or a custom version for your business, contact me:")
-        st.markdown("📩 **Email:** abdull.devv@gmail.com")
-        st.stop()
+            Topic:
+            {topic}
 
+            Text:
+            {text}
 
-    st.header("Input")
-    st.divider()
-    task = st.selectbox("Task Selector",["Description","Email","Social Post","Blog Intro"])
+            length:
+            {length}
 
-    topic = st.text_input("Enter the topic: ")
+            Tone:
+            {tone}
+            """
+            
+            response = model.generate_content(
+                    prompt,
+                    generation_config={"max_output_tokens": 200})
+            response_text = response.text
+            st.session_state.cache[key] = response_text
 
-    text = st.text_area("Enter your text: ")
-
-    length = st.selectbox("Length",["0-100 Words","150-200 Words","300-400 words"])
-
-    tone = st.selectbox("Tone",["Friendly","Professional","Casual"])
-
-    button = st.button("Enter")
-
-
-    if "cache" not in st.session_state:
-        st.session_state.cache = {}
-    # cleaned = text[:200]
-    key = topic + task + tone + length + text[:200]
-
-    if(button):
-        if len(topic) == 0 or len(text) == 0:
-                st.error("Error! All fields are mandatory")
-                st.stop()
-        
-        st.session_state.usage_count += 1
-
-        with st.spinner(f"Writing the {task}"):
-            st.header("AI Result")
-            st.divider()
-            if key in st.session_state.cache:
-                response_text = st.session_state.cache[key]
-            else:
-                prompt = f"""
-                Task:
-                {task}
-
-                Topic:
-                {topic}
-
-                Text:
-                {text}
-
-                length:
-                {length}
-
-                Tone:
-                {tone}
-                """
-                
-                response = model.generate_content(
-                        prompt,
-                        generation_config={"max_output_tokens": 200})
-                response_text = response.text
-                st.session_state.cache[key] = response_text
-
-            st.write(response_text)
-            st.download_button(      # ✅ add this
-                label="Download Result",
-                data=response_text,
-                file_name="ai_writing_result.txt",
-                mime="text/plain"
-            )
-
-
-if(page == "Instructions"):
-    st.title("Instructions")
-    st.header("How to use the Tool")
-    
-    st.write("1. Select the Task eg: write Description, email etc")
-    st.write("2. Enter the topic")
-    st.write("3. Enter your text")
-    st.write("4. Choose the word count you want")
-    st.write("5. Select the tone")
-    st.write("6. You can also download the result")
-
-                
-
+        st.write(response_text)
+        st.download_button(      # ✅ add this
+            label="Download Result",
+            data=response_text,
+            file_name="ai_writing_result.txt",
+            mime="text/plain"
+        )
 
 
 

@@ -50,127 +50,110 @@ Rules:
 - no backticks"""
 )
 
-choice = st.sidebar.selectbox("Navigation",["HomePage","AI Lead Intelligence Tool","Instructions"])
 visited_url = []
 
-if(choice == "HomePage"):
-    st.title("HomePage")
-    st.header("AI Lead Intelligence Tool")
-    st.divider()
 
-    st.write("This is a Lead Intelligence AI Tool")
-    st.write("You just need to paste the list of URL")
-    st.write("It will tell you all the data about each url")
 
-elif(choice == "AI Lead Intelligence Tool"):
-    url_data = []
-    #to store data of multiple comapnies
-    all_reports = []
+url_data = []
+#to store data of multiple comapnies
+all_reports = []
 
-    st.title("AI Lead Intelligence Tool")
-    if st.session_state.usage_count >= 3:
-        st.warning("🔒 **Demo limit reached.**")
-        st.info("I hope you enjoyed the tool! To get full access for your business or to see more of my work, contact me:")
-        st.markdown("📩 **Email:** abdull.devv@gmail.com")
+st.title("AI Lead Intelligence Tool")
+if st.session_state.usage_count >= 3:
+    st.warning("🔒 **Demo limit reached.**")
+    st.info("I hope you enjoyed the tool! To get full access for your business or to see more of my work, contact me:")
+    st.markdown("📩 **Email:** abdull.devv@gmail.com")
+    st.stop()
+
+st.header("Input")
+st.divider()
+
+urls = st.text_area("Paste the Companies URL Below:")
+
+button = st.button("Analyze Companies")
+
+st.header("Analyzed Results")
+st.divider()
+
+if "cache" not in st.session_state:
+    st.session_state.cache = {}
+
+if button:
+    if(len(urls) == 0):
+        st.error("URL Field cannot be empty")
         st.stop()
 
-    st.header("Input")
-    st.divider()
+    st.session_state.usage_count += 1
 
-    urls = st.text_area("Paste the Companies URL Below:")
+    with st.spinner("Analyzing your Competitors"):
+        urls = urls.split("\n")
 
-    button = st.button("Analyze Companies")
+        for url in urls:
+            cleaned = ""
 
-    st.header("Analyzed Results")
-    st.divider()
+            url = url.strip()
+            if url in visited_url:
+                continue
 
-    if "cache" not in st.session_state:
-        st.session_state.cache = {}
+            if(len(url) == 0):
+                continue
 
-    if button:
-        if(len(urls) == 0):
-            st.error("URL Field cannot be empty")
-            st.stop()
-
-        st.session_state.usage_count += 1
-
-        with st.spinner("Analyzing your Competitors"):
-            urls = urls.split("\n")
-
-            for url in urls:
-                cleaned = ""
-
-                url = url.strip()
-                if url in visited_url:
-                    continue
-
-                if(len(url) == 0):
-                    continue
-
-                visited_url.append(url)
+            visited_url.append(url)
                 
-                if not url.startswith("http"):
-                    url = "https://" + url
+            if not url.startswith("http"):
+                url = "https://" + url
                 
-                try:
-                    r = requests.get(url,headers=header,timeout=10)
+            try:
+                r = requests.get(url,headers=header,timeout=10)
 
-                    if r.status_code != 200:
-                        st.error(f"Website {url} cannot be reached Error: {r.status_code}")
-                        continue
-
-                    info = BeautifulSoup(r.text,"html.parser")
-
-                    data = info.find_all(["h1","h2","h3","h4","h5","h6","p"])
-                    
-                    for el in data:
-                        cleaned += el.text.strip() + "\n"
-                    
-                    if len(cleaned) < 50:
-                        st.error(f"Not Enough Content found for: {url}")
-                        continue
-                    key = url.strip().lower()
-                    url_data.append(cleaned)
-                    
-                    cleaned = cleaned[:5000]
-                    if key in st.session_state.cache:
-                        response_text = st.session_state.cache[key]
-                    else:
-                        prompt = f"""
-                        Data:
-                        {cleaned}
-                        """
-                        response = model.generate_content(prompt)
-                        response_text = response.text
-                        st.session_state.cache[key] = response_text
-                    
-                    #to store data of a single company
-                    st.subheader(url)
-                    st.write(response_text)
-                    report = {}
-                    report.update({"URL" : url, "AI Analysis" : response_text})
-                    all_reports.append(report)
-                except Exception as e:
-                    st.error(f"Error for {url}: {e}")
+                if r.status_code != 200:
+                    st.error(f"Website {url} cannot be reached Error: {r.status_code}")
                     continue
-            #json dumps convert python text into json
-            json_data = json.dumps(all_reports,indent = 4)
-            st.download_button(
-                label = "Download Results",
-                data = json_data,
-                file_name = "ai_result.json",
-                mime="application/json"
-            )
 
-elif(choice == "Instructions"):
-    st.title("Instructions")
-    st.header("How to use the Tool")
-    st.divider()
+                info = BeautifulSoup(r.text,"html.parser")
 
-    st.write("1. User pastes a list of company names or URLs")
-    st.write("2. Tool scrapes each company's website automatically")
-    st.write("3. AI analyzes each one: what they do, who they target, pain points")
-    st.write("4. Output: a clean report per company — ready to use for outreach")
-    st.write("5. Streamlit UI with download button for the full report")
+                data = info.find_all(["h1","h2","h3","h4","h5","h6","p"])
+                    
+                for el in data:
+                    cleaned += el.text.strip() + "\n"
+                    
+                if len(cleaned) < 50:
+                    st.error(f"Not Enough Content found for: {url}")
+                    continue
+                key = url.strip().lower()
+                url_data.append(cleaned)
+                    
+                cleaned = cleaned[:5000]
+                if key in st.session_state.cache:
+                    response_text = st.session_state.cache[key]
+                else:
+                    prompt = f"""
+                    Data:
+                    {cleaned}
+                    """
+                    response = model.generate_content(prompt)
+                    response_text = response.text
+                    st.session_state.cache[key] = response_text
+                    
+                #to store data of a single company
+                st.subheader(url)
+                st.write(response_text)
+                report = {}
+                report.update({"URL" : url, "AI Analysis" : response_text})
+                all_reports.append(report)
+            except Exception as e:
+                st.error(f"Error for {url}: {e}")
+                continue
+        #json dumps convert python text into json
+        json_data = json.dumps(all_reports,indent = 4)
+        st.download_button(
+            label = "Download Results",
+            data = json_data,
+            file_name = "ai_result.json",
+            mime="application/json"
+        )
+
+
+
 
 

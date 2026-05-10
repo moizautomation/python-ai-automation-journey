@@ -60,124 +60,106 @@ headers = {
     "User-Agent": "Mozilla/5.0"
 }
 
-page = st.sidebar.selectbox("Navigate", ["Home", "Tool","Instructions"])
-if page == "Home":
-    st.title("Home Page")
-    st.text("This AI tool is used to scrape data from any website\n and give you its Summary, Key Points, or the Sentiment of the Website.")
-    st.write("This is the homepage content")
+st.title("AI Tool")
 
-elif page == "Tool":
-    st.title("AI Tool")
+if st.session_state.usage_count >= 3:
+    st.warning("🔒 **Demo limit reached.**")
+    st.info("To unlock unlimited analysis or request a custom build for your agency, contact me:")
+    st.markdown("📩 **Email:** abdull.devv@gmail.com")
+    st.stop()
 
-    if st.session_state.usage_count >= 3:
-        st.warning("🔒 **Demo limit reached.**")
-        st.info("To unlock unlimited analysis or request a custom build for your agency, contact me:")
-        st.markdown("📩 **Email:** abdull.devv@gmail.com")
+st.header("Web AI Analyzer")
+st.divider()
+
+st.subheader("Input")
+st.divider()
+
+url = st.text_area("Enter the Target URL: ")
+uploaded_file = st.file_uploader("Upload your File: ",type=["txt"])
+
+mode = st.selectbox("Choose mode",["Summary","Key Points","Sentiment"])
+button = st.button("Enter")
+
+st.subheader("Output")
+st.divider()
+
+
+if button:
+    #Input Validation
+    if(len(url) != 0 and uploaded_file is not None):
+        st.error("Error! Cannot use both URL and File Upload at the same time")
         st.stop()
 
-    st.header("Web AI Analyzer")
-    st.divider()
+    if(len(url) == 0 and uploaded_file is None):
+        st.error("Error! Both cannot be empty")
+        st.stop()
 
-    st.subheader("Input")
-    st.divider()
+    st.session_state.usage_count += 1
 
-    url = st.text_area("Enter the Target URL: ")
-    uploaded_file = st.file_uploader("Upload your File: ",type=["txt"])
+    cleaned = ""
+    key = ""
 
-    mode = st.selectbox("Choose mode",["Summary","Key Points","Sentiment"])
-    button = st.button("Enter")
+    with st.spinner("Processing...."):
+        if(len(url) > 0):
+            url = url.strip()
+            key = url + mode
+            if not url.startswith("http"):
+                st.error("Invalid URL")
+                st.stop()
+            try:
+                r = requests.get(url, headers=headers)
+                soup = BeautifulSoup(r.text, "html.parser")
 
-    st.subheader("Output")
-    st.divider()
+                data = soup.find_all(["p", "h1", "h2", "h3", "h4", "h5", "h6"])
 
-
-    if button:
-        #Input Validation
-        if(len(url) != 0 and uploaded_file is not None):
-            st.error("Error! Cannot use both URL and File Upload at the same time")
-            st.stop()
-
-        if(len(url) == 0 and uploaded_file is None):
-            st.error("Error! Both cannot be empty")
-            st.stop()
-
-        st.session_state.usage_count += 1
-
-        cleaned = ""
-        key = ""
-
-        with st.spinner("Processing...."):
-            if(len(url) > 0):
-                url = url.strip()
-                key = url + mode
-                if not url.startswith("http"):
-                    st.error("Invalid URL")
-                    st.stop()
-                try:
-                    r = requests.get(url, headers=headers)
-                    soup = BeautifulSoup(r.text, "html.parser")
-
-                    data = soup.find_all(["p", "h1", "h2", "h3", "h4", "h5", "h6"])
-
-                    for el in data:
+                for el in data:
                         cleaned += el.text.strip() + "\n"
-                except:
-                    st.error("Website cannot be reached")
-                    st.stop()
-            elif uploaded_file is not None:
-                    cleaned = uploaded_file.read().decode("utf-8").strip()
+            except:
+                st.error("Website cannot be reached")
+                st.stop()
+        elif uploaded_file is not None:
+                cleaned = uploaded_file.read().decode("utf-8").strip()
 
-                    key = cleaned[:100] + mode
+                key = cleaned[:100] + mode
 
-            if "cache" not in st.session_state:
-                st.session_state.cache = {}
+        if "cache" not in st.session_state:
+            st.session_state.cache = {}
             
-            if key in st.session_state.cache:
-                response_text = st.session_state.cache[key]
-            else:
-                prompt = f"""
-                Text:
-                {cleaned}
+        if key in st.session_state.cache:
+            response_text = st.session_state.cache[key]
+        else:
+            prompt = f"""
+            Text:
+            {cleaned}
 
-                Mode:
-                {mode}
+            Mode:
+            {mode}
 
-                IMPORTANT:
-                Return ONLY valid JSON.
-                """
+            IMPORTANT:
+            Return ONLY valid JSON.
+            """
 
-                response = model.generate_content(
-                    prompt,
-                    generation_config={"max_output_tokens": 200}
-                )
+            response = model.generate_content(
+                prompt,
+                generation_config={"max_output_tokens": 200}
+            )
 
                 # try:
                     #used to convert string into json by reading through it
                     # json_data = json.loads(response_text)
 
                     #Output
-            st.subheader("AI Result")
-            response_text = response.text
-            st.session_state.cache[key] = response_text
-            st.write(response_text)
-            st.download_button(
-                label = "Download Results",
-                data = response_text,
-                file_name = "ai_result.json",
-                mime="application/json"
-            )
-                # except:
-                #     st.subheader("AI Result")
-                #     st.error("Error! Ai return invalid result")
+        st.subheader("AI Result")
+        response_text = response.text
+        st.session_state.cache[key] = response_text
+        st.write(response_text)
+        st.download_button(
+            label = "Download Results",
+            data = response_text,
+            file_name = "ai_result.json",
+            mime="application/json"
+        )
 
-elif page == "Instructions":
-    st.title("Instructions")
-    st.write("How to use the Tool")
-    st.write("1. Input you URL or upload File")
-    st.write("2. Choose one of the modes")
-    st.write("3. Press Enter")
-    st.write("4. Result will be shown below")
-    st.write("5. You can download it using the download button")
 
    
 
