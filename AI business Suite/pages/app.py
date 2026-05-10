@@ -13,9 +13,6 @@ import requests
 from bs4 import BeautifulSoup
 import streamlit as st
 
-if "usage_count" not in st.session_state:
-    st.session_state.usage_count = 0
-
 header = {
     "User-Agent": "Mozilla/5.0"
 }

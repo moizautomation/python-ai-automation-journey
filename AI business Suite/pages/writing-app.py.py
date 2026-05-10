@@ -9,9 +9,6 @@ from dotenv import load_dotenv
 import os
 import streamlit as st
 
-if "usage_count" not in st.session_state:
-    st.session_state.usage_count = 0
-
 load_dotenv()
 
 api_key = os.getenv("GEMINI_API_KEY") or st.secrets.get("GEMINI_API_KEY")

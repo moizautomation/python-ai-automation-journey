@@ -2,9 +2,13 @@ import streamlit as st
 
 st.set_page_config(page_title="Abdul's AI Suite", layout="wide")
 
-# Initialize the global usage counter
+# 1. Initialize the global usage counter
 if "usage_count" not in st.session_state:
     st.session_state.usage_count = 0
+
+# 2. Initialize the global cache (Add this line)
+if "cache" not in st.session_state:
+    st.session_state.cache = {}
 
 st.title("🚀 Custom AI Business Solutions")
 st.markdown(f"**Total Tools Used this Session: {st.session_state.usage_count}/3**")
