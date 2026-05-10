@@ -8,7 +8,6 @@
 #send description to ai to get summary
 
 import google.generativeai as genai
-import time
 import json
 from dotenv import load_dotenv 
 import os
@@ -16,10 +15,14 @@ import requests
 from bs4 import BeautifulSoup
 import streamlit as st
 
+if "usage_count" not in st.session_state:
+    st.session_state.usage_count = 0
 
 load_dotenv()
 
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+# This looks for the key in your local .env OR in Streamlit's Secret settings
+api_key = os.getenv("GEMINI_API_KEY") or st.secrets.get("GEMINI_API_KEY")
+genai.configure(api_key=api_key)
 
 #Phase 4 - Control AI output and restrict it to only give in strict JSON format
 model = genai.GenerativeModel(
@@ -65,6 +68,13 @@ if page == "Home":
 
 elif page == "Tool":
     st.title("AI Tool")
+
+    if st.session_state.usage_count >= 3:
+        st.warning("🔒 **Demo limit reached.**")
+        st.info("To unlock unlimited analysis or request a custom build for your agency, contact me:")
+        st.markdown("📩 **Email:** abdull.devv@gmail.com")
+        st.stop()
+
     st.header("Web AI Analyzer")
     st.divider()
 
@@ -90,6 +100,8 @@ elif page == "Tool":
         if(len(url) == 0 and uploaded_file is None):
             st.error("Error! Both cannot be empty")
             st.stop()
+
+        st.session_state.usage_count += 1
 
         cleaned = ""
         key = ""
@@ -124,39 +136,39 @@ elif page == "Tool":
                 response_text = st.session_state.cache[key]
             else:
                 prompt = f"""
-        Text:
-        {cleaned}
+                Text:
+                {cleaned}
 
-        Mode:
-        {mode}
+                Mode:
+                {mode}
 
-        IMPORTANT:
-        Return ONLY valid JSON.
-        """
+                IMPORTANT:
+                Return ONLY valid JSON.
+                """
 
                 response = model.generate_content(
                     prompt,
                     generation_config={"max_output_tokens": 200}
                 )
 
-                response_text = response.text
-                st.session_state.cache[key] = response_text
-                try:
+                # try:
                     #used to convert string into json by reading through it
                     # json_data = json.loads(response_text)
 
                     #Output
-                    st.subheader("AI Result")
-                    st.write(response_text)
-                    st.download_button(
-                        label = "Download Results",
-                        data = response_text,
-                        file_name = "ai_result.json",
-                        mime="application/json"
-                    )
-                except:
-                    st.subheader("AI Result")
-                    st.error("Error! Ai return invalid result")
+            st.subheader("AI Result")
+            response_text = response.text
+            st.session_state.cache[key] = response_text
+            st.write(response_text)
+            st.download_button(
+                label = "Download Results",
+                data = response_text,
+                file_name = "ai_result.json",
+                mime="application/json"
+            )
+                # except:
+                #     st.subheader("AI Result")
+                #     st.error("Error! Ai return invalid result")
 
 elif page == "Instructions":
     st.title("Instructions")

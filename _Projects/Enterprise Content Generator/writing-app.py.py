@@ -9,9 +9,13 @@ from dotenv import load_dotenv
 import os
 import streamlit as st
 
+if "usage_count" not in st.session_state:
+    st.session_state.usage_count = 0
+
 load_dotenv()
 
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+api_key = os.getenv("GEMINI_API_KEY") or st.secrets.get("GEMINI_API_KEY")
+genai.configure(api_key=api_key)
 
 model = genai.GenerativeModel(
     model_name="gemini-2.5-flash",
@@ -42,6 +46,13 @@ if(page == "Writing Assistant"):
     st.title("AI Writing Assistant")
     st.divider()
 
+    if st.session_state.usage_count >= 3:
+        st.warning("🔒 **Demo limit reached.**")
+        st.info("To get full access or a custom version for your business, contact me:")
+        st.markdown("📩 **Email:** abdull.devv@gmail.com")
+        st.stop()
+
+
     st.header("Input")
     st.divider()
     task = st.selectbox("Task Selector",["Description","Email","Social Post","Blog Intro"])
@@ -61,15 +72,17 @@ if(page == "Writing Assistant"):
         st.session_state.cache = {}
     # cleaned = text[:200]
     key = topic + task + tone + length + text[:200]
+
     if(button):
+        if len(topic) == 0 or len(text) == 0:
+                st.error("Error! All fields are mandatory")
+                st.stop()
+        
+        st.session_state.usage_count += 1
+
         with st.spinner(f"Writing the {task}"):
             st.header("AI Result")
             st.divider()
-
-            if len(topic) == 0 or len(text) == 0:
-                st.error("Error! All fields are mandatory")
-                st.stop() 
-
             if key in st.session_state.cache:
                 response_text = st.session_state.cache[key]
             else:
@@ -96,7 +109,13 @@ if(page == "Writing Assistant"):
                 response_text = response.text
                 st.session_state.cache[key] = response_text
 
-                st.write(response_text)
+            st.write(response_text)
+            st.download_button(      # ✅ add this
+                label="Download Result",
+                data=response_text,
+                file_name="ai_writing_result.txt",
+                mime="text/plain"
+            )
 
 
 if(page == "Instructions"):

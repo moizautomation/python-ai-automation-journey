@@ -6,7 +6,6 @@
 # Streamlit UI with download button for the full report
 
 import google.generativeai as genai
-import time
 import json
 from dotenv import load_dotenv 
 import os
@@ -14,13 +13,18 @@ import requests
 from bs4 import BeautifulSoup
 import streamlit as st
 
+if "usage_count" not in st.session_state:
+    st.session_state.usage_count = 0
+
 header = {
     "User-Agent": "Mozilla/5.0"
 }
 
 load_dotenv()
 
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+# This looks for the key in your local .env OR in Streamlit's Secret settings
+api_key = os.getenv("GEMINI_API_KEY") or st.secrets.get("GEMINI_API_KEY")
+genai.configure(api_key=api_key)
 
 model = genai.GenerativeModel(
     model_name="gemini-2.5-flash",
@@ -64,6 +68,11 @@ elif(choice == "AI Lead Intelligence Tool"):
     all_reports = []
 
     st.title("AI Lead Intelligence Tool")
+    if st.session_state.usage_count >= 3:
+        st.warning("🔒 **Demo limit reached.**")
+        st.info("I hope you enjoyed the tool! To get full access for your business or to see more of my work, contact me:")
+        st.markdown("📩 **Email:** abdull.devv@gmail.com")
+        st.stop()
 
     st.header("Input")
     st.divider()
@@ -82,7 +91,9 @@ elif(choice == "AI Lead Intelligence Tool"):
         if(len(urls) == 0):
             st.error("URL Field cannot be empty")
             st.stop()
-            
+
+        st.session_state.usage_count += 1
+
         with st.spinner("Analyzing your Competitors"):
             urls = urls.split("\n")
 
@@ -139,12 +150,11 @@ elif(choice == "AI Lead Intelligence Tool"):
                     report = {}
                     report.update({"URL" : url, "AI Analysis" : response_text})
                     all_reports.append(report)
-                    
-                    #json dumps convert python text into json
-                    json_data = json.dumps(all_reports,indent = 4)
                 except Exception as e:
                     st.error(f"Error for {url}: {e}")
                     continue
+            #json dumps convert python text into json
+            json_data = json.dumps(all_reports,indent = 4)
             st.download_button(
                 label = "Download Results",
                 data = json_data,
