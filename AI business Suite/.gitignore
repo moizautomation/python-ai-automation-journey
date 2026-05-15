@@ -1,0 +1,6 @@
+.env
+echo "AI business Suite/" >> .gitignore
+echo "_Projects/" >> .gitignore
+echo "ai-portfolio/" >> .gitignore
+echo "ai-projects/" >> .gitignore
+echo "__pycache__/" >> .gitignore
