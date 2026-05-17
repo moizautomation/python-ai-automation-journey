@@ -71,12 +71,43 @@ print("Database Connected")
 # row = cursor.fetchall()
 # print(f"Ascending Order: {row}")
 
-cursor.execute("""SELECT name,address FROM companies
-               WHERE name LIKE :name
-               ORDER BY name ASC
-               LIMIT 2""", {"name" : "%A%"})
+# cursor.execute("""SELECT name,address FROM companies
+#                WHERE name LIKE :name
+#                ORDER BY name ASC
+#                LIMIT 2""", {"name" : "%A%"})
 
-result = cursor.fetchall()
+# result = cursor.fetchall()
 
-print(f"\nFinal Result: {result}")
+# print(f"\nFinal Result: {result}")
+
+
+#Day 3 (Aggregation SQLITE)
+
+cursor.execute("SELECT COUNT(*) FROM companies")
+count = cursor.fetchall()
+# cursor.execute("ALTER TABLE companies ADD COLUMN revenue INT")
+# cursor.execute("UPDATE companies SET revenue = 10 WHERE name =:name",{"name" : "Payments"})
+# cursor.execute("UPDATE companies SET revenue = 0 WHERE name =:name",{"name" : "Zoom"})
+# cursor.execute("UPDATE companies SET revenue = 10 WHERE name =:name",{"name" : "Amazon"})
+# cursor.execute("UPDATE companies SET revenue = 10 WHERE name =:name",{"name" : "Snapchat"})
+# cursor.execute("UPDATE companies SET revenue = 0 WHERE name =:name",{"name" : "Airbnb"})
+# conn.commit()
+
+# cursor.execute("SELECT AVG(revenue) FROM companies")
+# avg = cursor.fetchone()
+
+# cursor.execute("SELECT MIN(revenue) FROM companies")
+# minn = cursor.fetchone()
+
+# cursor.execute("SELECT MAX(revenue) FROM companies")
+# maxx = cursor.fetchone()
+
+# print(f"Average: {avg}\nMinimum: {minn}\nMaximum: {maxx}")
+
+cursor.execute("SELECT revenue FROM companies")
+data = cursor.fetchone()
+
+print(f"Data: {data}")
+
+
 
