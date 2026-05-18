@@ -47,7 +47,7 @@ import sqlite3
 
 
 #Day 2 - learning sqlites basics (LIKE, ORDER BY, LIMIT,BETTER SELECT USAGE)
-conn = sqlite3.connect("test.db")
+conn = sqlite3.connect("tesst.db")
 
 cursor = conn.cursor()
 
@@ -81,10 +81,10 @@ print("Database Connected")
 # print(f"\nFinal Result: {result}")
 
 
-#Day 3 (Aggregation SQLITE)
+#Day 3 (Aggregation SQLITE Learning how to group similar data,find min,max,avg,sum etc and apply conditions on group using having)
 
-cursor.execute("SELECT COUNT(*) FROM companies")
-count = cursor.fetchall()
+# cursor.execute("SELECT COUNT(*) FROM companies")
+# count = cursor.fetchall()
 # cursor.execute("ALTER TABLE companies ADD COLUMN revenue INT")
 # cursor.execute("UPDATE companies SET revenue = 10 WHERE name =:name",{"name" : "Payments"})
 # cursor.execute("UPDATE companies SET revenue = 0 WHERE name =:name",{"name" : "Zoom"})
@@ -92,6 +92,9 @@ count = cursor.fetchall()
 # cursor.execute("UPDATE companies SET revenue = 10 WHERE name =:name",{"name" : "Snapchat"})
 # cursor.execute("UPDATE companies SET revenue = 0 WHERE name =:name",{"name" : "Airbnb"})
 # conn.commit()
+
+# cursor.execute("SELECT SUM(revenue) FROM companies")
+# sum = cursor.fetchone()
 
 # cursor.execute("SELECT AVG(revenue) FROM companies")
 # avg = cursor.fetchone()
@@ -102,12 +105,63 @@ count = cursor.fetchall()
 # cursor.execute("SELECT MAX(revenue) FROM companies")
 # maxx = cursor.fetchone()
 
-# print(f"Average: {avg}\nMinimum: {minn}\nMaximum: {maxx}")
+# print(f"Sum: {sum}\nAverage: {avg}\nMinimum: {minn}\nMaximum: {maxx}")
 
-cursor.execute("SELECT revenue FROM companies")
-data = cursor.fetchone()
+#Select means choosing the data we want to display
+# cursor.execute("SELECT revenue, Count (*) FROM companies GROUP BY revenue")
+# data = cursor.fetchall()
 
-print(f"Data: {data}")
+# print(f"Data: {data}")
+
+# cursor.execute("""CREATE TABLE IF NOT EXISTS employee(
+#                Id INTEGER PRIMARY KEY AUTOINCREMENT,
+#                name TEXT,
+#                salary INTEGER,
+#                address TEXT
+#                )""")
+
+# cursor.execute("INSERT INTO employee(name,salary,address) VALUES(:name,:salary,:address)",{"name" : "Abdul","salary" : 10, "address" : "Pakistan"})
+# cursor.execute("INSERT INTO employee(name,salary,address) VALUES(:name,:salary,:address)",{"name" : "Abd","salary" : 300, "address" : "Pakistan"})
+# cursor.execute("INSERT INTO employee(name,salary,address) VALUES(:name,:salary,:address)",{"name" : "Moiz","salary" : 60, "address" : "Canada"})
+# cursor.execute("INSERT INTO employee(name,salary,address) VALUES(:name,:salary,:address)",{"name" : "Abd","salary" : 100, "address" : "USA"})
+# conn.commit()
+
+# cursor.execute("SELECT name, COUNT(*) FROM employee GROUP BY name HAVING COUNT(*) > 1")
+
+# data = cursor.fetchall()
+
+# print(f"Grouped Data: {data}")
+
+# cursor.execute("SELECT SUM(salary) FROM employee")
+# total = cursor.fetchone()
+
+# cursor.execute("SELECT AVG(salary) FROM employee")
+# avg = cursor.fetchone()
+
+# cursor.execute("SELECT MIN(salary) FROM employee")
+# min = cursor.fetchone()
+
+# cursor.execute("SELECT MAX(salary) FROM employee")
+# max = cursor.fetchone()
+
+# print(f"Total Salary: {total}\nAverage Salary: {avg}\nMin Salary: {min}\nMax Salary: {max}")
+
+#Going to select the salary column and arrange it in ascending order and will show top 3 only
+cursor.execute("SELECT salary FROM employee  ORDER BY salary DESC LIMIT 3")
+
+ordered = cursor.fetchall()
+
+cursor.execute("SELECT MAX(salary) FROM employee")
+max_salary = cursor.fetchone()
+
+cursor.execute("SELECT MIN(salary) FROM employee")
+min_salary = cursor.fetchone()
+
+print(f"Data sorted by salary: {ordered}\nMinimum Salary: {min_salary}\nMaximum Salary: {max_salary}")
+
+
+
+
 
 
 
