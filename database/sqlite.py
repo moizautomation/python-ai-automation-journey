@@ -147,20 +147,66 @@ print("Database Connected")
 # print(f"Total Salary: {total}\nAverage Salary: {avg}\nMin Salary: {min}\nMax Salary: {max}")
 
 #Going to select the salary column and arrange it in ascending order and will show top 3 only
-cursor.execute("SELECT salary FROM employee  ORDER BY salary DESC LIMIT 3")
+# cursor.execute("SELECT salary FROM employee  ORDER BY salary DESC LIMIT 3")
 
-ordered = cursor.fetchall()
+# ordered = cursor.fetchall()
 
-cursor.execute("SELECT MAX(salary) FROM employee")
-max_salary = cursor.fetchone()
+# cursor.execute("SELECT MAX(salary) FROM employee")
+# max_salary = cursor.fetchone()
 
-cursor.execute("SELECT MIN(salary) FROM employee")
-min_salary = cursor.fetchone()
+# cursor.execute("SELECT MIN(salary) FROM employee")
+# min_salary = cursor.fetchone()
 
-print(f"Data sorted by salary: {ordered}\nMinimum Salary: {min_salary}\nMaximum Salary: {max_salary}")
+# print(f"Data sorted by salary: {ordered}\nMinimum Salary: {min_salary}\nMaximum Salary: {max_salary}")
 
 
+#Day 4 SQLITE (JOINs + Real Database Design)
+#Syntax:  FOREIGN KEY(company_id) REFERENCES companies(id)
+#this means that it will match the campany column from employee to one of the id of the company table.
+# cursor.execute("""CREATE TABLE IF NOT EXISTS companies(\
+#                Company_ID INTEGER PRIMARY KEY AUTOINCREMENT,
+#                name TEXT)""")
+# cursor.execute("""CREATE TABLE IF NOT EXISTS employee(
+#                Employee_ID INTEGER PRIMARY KEY AUTOINCREMENT,
+#                name TEXT,
+#                company INTEGER,
+#                FOREIGN KEY (company) REFERENCES companies(Company_ID))""")
+# conn.commit()
 
+# cursor.execute("INSERT INTO companies (name) VALUES (:name)", {"name": "Stripe"})
+# cursor.execute("INSERT INTO companies (name) VALUES (:name)", {"name": "Zoom"})
+# cursor.execute("INSERT INTO companies (name) VALUES (:name)", {"name": "Amazon"})
+# conn.commit()
+
+# cursor.execute("INSERT INTO employee (name, company) VALUES (:name, :company)", {"name": "Abdul", "company": 1})
+# cursor.execute("INSERT INTO employee (name, company) VALUES (:name, :company)", {"name": "Moiz", "company": 2})
+# cursor.execute("INSERT INTO employee (name, company) VALUES (:name, :company)", {"name": "Ali", "company": 3})
+# cursor.execute("INSERT INTO employee (name, company) VALUES (:name, :company)", {"name": "Sara", "company": 1})
+# conn.commit()
+
+#INNER JOIN means it will only display rows where a match is successfully found in both tables.
+# cursor.execute("SELECT employee.name,companies.name FROM employee INNER JOIN companies ON employee.company = companies.Company_ID ")
+
+# relation = cursor.fetchall()
+
+# print(f"{relation}")
+
+#LEFT JOIN
+cursor.execute("SELECT employee.name,companies.name FROM employee LEFT JOIN companies ON employee.company = companies.Company_ID ")
+relation = cursor.fetchall()
+print(f"{relation}")
+
+cursor.execute("SELECT employee.name,companies.name FROM employee RIGHT JOIN companies ON employee.company = companies.Company_ID ")
+relation = cursor.fetchall()
+print(f"{relation}")
+
+# cursor.execute("CREATE INDEX employee_name_idx ON employee(name)")
+
+# cursor.execute("CREATE INDEX company_id_idx ON employee(company)")
+
+cursor.execute("SELECT * FROM employee WHERE name = :name",{"name" : "Sara"})
+name = cursor.fetchall()
+print(f"Name by index: {name}")
 
 
 
