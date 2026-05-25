@@ -130,46 +130,81 @@ import pandas as pd
 
 df = pd.read_csv("data.csv", encoding="latin1")
 
-df = df.dropna()
+# df = df.dropna()
 
-df = df.drop_duplicates()
+# df = df.drop_duplicates()
 
-df["Price"] = df["Price"].str.replace("$","").astype(float)
+df["Price"] = df["Price"].str.replace("$", "")
+df["Price"] = df["Price"].str.replace(",", "")
+df["Price"] = df["Price"].str.strip()
+df["Price"] = df["Price"].astype(float)
 
 df["Ratings"] = df["Ratings"].str.replace("stars","").astype(float)
 
-print(df.head())
+# print(df.head())
 
 # TASK 4 (DATA INSIGHTS)
 
-filter = df[df["Price"] > 500]
+# filter = df[df["Price"] > 500]
 
-print(f"Products with greater than $500 Price: {filter}")
+# print(f"Products with greater than $500 Price: {filter}")
 
-filter = df[df["Price"] < 150]
+# filter = df[df["Price"] < 150]
 
-print(f"Products with less than $150 Price: {filter}")
+# print(f"Products with less than $150 Price: {filter}")
 
-filter = df[df["Ratings"] > 4]
+# filter = df[df["Ratings"] > 4]
 
-print(f"Products with greater than 4 Ratings: {filter}")
+# print(f"Products with greater than 4 Ratings: {filter}")
 
-filter = df[df["Ratings"] < 4]
+# filter = df[df["Ratings"] < 4]
 
-print(f"Products with less than 4 Ratings: {filter}")
+# print(f"Products with less than 4 Ratings: {filter}")
 
 #sorting by price from high to low
-sort = df.sort_values(by="Price",ascending=False)
+# sort = df.sort_values(by="Price",ascending=False)
 
 #printing the top 3 highest priced products
-print(sort.head(3))
+# print(sort.head(3))
 
 #sorting by rartings from high to low
-sort = df.sort_values(by="Ratings",ascending=False)
+# sort = df.sort_values(by="Ratings",ascending=False)
 
 #printing the top 3 highest rated products
-print(sort.head(3))
+# print(sort.head(3))
 
 #printing statistics like avg price and ratings
+# print(df["Price"].mean())
+# print(df["Ratings"].mean())
+
+# TASK 5 (ANALYTICS REPORT)
+print("No of Products")
+sum = df["Product Name"].count()
+print(sum)
+
+print("Average Price")
 print(df["Price"].mean())
+
+print("\nAverage Rating")
 print(df["Ratings"].mean())
+
+expensive = df[df["Price"] > 500]["Product Name"].count()
+print(f"No of Expensive Products: {expensive}")
+
+cheap = df[df["Price"] < 150]["Product Name"].count()
+print(f"No of Cheap Products: {cheap}")
+
+high = df[df["Ratings"] >= 4]["Product Name"].count()
+print(f"No of High Rated Products: {high}")
+
+low = df[df["Ratings"] < 4]["Product Name"].count()
+print(f"No of Low Rated Products: {low}")
+
+print(df.sort_values(by="Price",ascending=False).head(3))
+
+print(df.sort_values(by="Ratings",ascending=False).head(3))
+
+print("\nFINAL INSIGHT:")
+print("Most products are moderately priced with a few premium items above 500.")
+print("Ratings are generally above average, showing good product quality.")
+print("Overall dataset is balanced with both budget and high-end products.")
