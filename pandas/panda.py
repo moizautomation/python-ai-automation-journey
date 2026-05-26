@@ -226,14 +226,14 @@ import pandas as pd
 
 # # TASK 1 (GROUP BY and CATOGERY ANALYSIS)
 
-data = {
-    "Product": ["Laptop", "Phone", "Tablet", None, "Laptop", "Monitor"],
-    "Category": ["Electronics", "Electronics", "Electronics", "Accessories", "Electronics", None],
-    "Price": [1200, 800, None, 150, 1200, 300],
-    "Ratings": [4.8, 4.5, 4.1, None, 4.8, 3.9]
-}
+# data = {
+#     "Product": ["Laptop", "Phone", "Tablet", None, "Laptop", "Monitor"],
+#     "Category": ["Electronics", "Electronics", "Electronics", "Accessories", "Electronics", None],
+#     "Price": [1200, 800, None, 150, 1200, 300],
+#     "Ratings": [4.8, 4.5, 4.1, None, 4.8, 3.9]
+# }
 
-df = pd.DataFrame(data)
+# df = pd.DataFrame(data)
 
 # count_products = df.value_counts("Product")
 
@@ -331,59 +331,59 @@ df = pd.DataFrame(data)
 
 
 # TASK 4 (BUSINESS REPORT DASHBOARD)
-print("----- CORE BUSINESS KPI'S -----")
-count = df["Product"].count()
-print("Total no of Products: ",count)
+# print("----- CORE BUSINESS KPI'S -----")
+# count = df["Product"].count()
+# print("Total no of Products: ",count)
 
-avg_price = df["Price"].mean()
-print("Average Price: ",avg_price)
+# avg_price = df["Price"].mean()
+# print("Average Price: ",avg_price)
 
-avg_rating = df["Ratings"].mean()
-print("Averagee Rating: ",avg_rating)
+# avg_rating = df["Ratings"].mean()
+# print("Averagee Rating: ",avg_rating)
 
-df = df.sort_values(by="Price",ascending=False)
+# df = df.sort_values(by="Price",ascending=False)
 
-max_price = df["Price"].head(1)
+# max_price = df["Price"].head(1)
 
-min_price = df["Price"].tail(1)
+# min_price = df["Price"].tail(1)
 
-print("Price Range: ",max_price," - ",min_price)
-print(count)
+# print("Price Range: ",max_price," - ",min_price)
+# print(count)
 
-print("\n----- CATEGORY INTELLIGENCE -----")
+# print("\n----- CATEGORY INTELLIGENCE -----")
 
-av_price = df.groupby("Category")["Price"].mean()
+# av_price = df.groupby("Category")["Price"].mean()
 
-av_rating = df.groupby("Category")["Ratings"].mean()
+# av_rating = df.groupby("Category")["Ratings"].mean()
 
-count = df["Category"].value_counts()
+# count = df["Category"].value_counts()
 
-print("AVERAGE PRICE PER CATEGORY")
-print(av_price)
+# print("AVERAGE PRICE PER CATEGORY")
+# print(av_price)
 
-print("AVERAGE RATING PER CATEGORY")
-print(av_rating)
+# print("AVERAGE RATING PER CATEGORY")
+# print(av_rating)
 
-print("NO OF PRODUCTS")
-print(count)
+# print("NO OF PRODUCTS")
+# print(count)
 
-print("\n----- SMART SEGMENTATION -----")
+# print("\n----- SMART SEGMENTATION -----")
 
-prem_product = df[df["Price"] > df["Price"].mean()]
+# prem_product = df[df["Price"] > df["Price"].mean()]
 
-stan_product = df[(df["Price"] >= df["Price"].mean() * 0.8) & (df["Price"] <= df["Price"].mean() * 1.2)]
+# stan_product = df[(df["Price"] >= df["Price"].mean() * 0.8) & (df["Price"] <= df["Price"].mean() * 1.2)]
 
-low_product = df[df["Price"] < df["Price"].mean() * 0.8]
+# low_product = df[df["Price"] < df["Price"].mean() * 0.8]
 
-print("PREMIUM PRODUCTS: ",prem_product)
-print("STANDARD PRODUCTS: ",stan_product)
-print("LOW QUALITY PRODUCTS: ",low_product)
+# print("PREMIUM PRODUCTS: ",prem_product)
+# print("STANDARD PRODUCTS: ",stan_product)
+# print("LOW QUALITY PRODUCTS: ",low_product)
 
-print("UNUSUALLY EXPENSIVE PRODUCTS")
-print(df.head(5))
+# print("UNUSUALLY EXPENSIVE PRODUCTS")
+# print(df.head(5))
 
-print("UNUSUALLY CHEAP PRODUCTS")
-print(df.tail(5))
+# print("UNUSUALLY CHEAP PRODUCTS")
+# print(df.tail(5))
 
 
 
