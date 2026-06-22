@@ -101,31 +101,81 @@ model = ChatGoogleGenerativeAI(
 
 # TASK 3 (Memory)
 
-prompt = ChatPromptTemplate.from_template(""""
-    Answer the following question:
-    {Question}
-"""
-)
+# prompt = ChatPromptTemplate.from_template(""""
+#     Answer the following question:
+#     {Input}
+# """
+# )
 
+# memory = InMemoryChatMessageHistory()
+
+
+# chain = prompt | model
+
+# inputt = "My name is Abdul Moiz"
+# response = chain.invoke(
+#     {
+#         "Input" : inputt
+#     }
+# )
+
+# memory.add_user_message(inputt)
+# memory.add_ai_message(response.content)
+
+# history = memory.messages
+
+# prompt1 = ChatPromptTemplate.from_template("""
+#         Conversation history:
+#         {history}
+#         Answer the Question Below:
+#         {question}
+# """
+# )
+
+# chain1 = prompt1 | model
+
+# response1 = chain1.invoke(
+#     {
+#         "history" : history,
+#         "question" : "What is my Name?" 
+#     }
+# )
+# print(response1.content)
+
+# TASK 4 (Memory chatbot Loop)
+
+n = 4
 memory = InMemoryChatMessageHistory()
 
-memory.add_user_message("My name is Abdul Moiz")
-memory.add_ai_message("Nice to meet you Abdul Moiz")
+prompt = ChatPromptTemplate.from_template("""
+        Conversation History:
+        {history}
+        Answer the user message below:
+        {message}
+""")
 
-memory.add_user_message("I like Python")
-memory.add_ai_message("Great!")
+chain = prompt | model
 
-chain = memory | prompt
+history = ""
 
-chain = chain | model
+for i in range (0,n):
+    user_msg = input("Enter your Prompt: ")
 
-response = chain.invoke(
-    {
-        "Question" : "What is my name?"
-    }
-)
+    memory.add_user_message(user_msg)
+    
+    response = chain.invoke(
+        {
+            "history" : history,
+            "message" : user_msg
+        }
+    )
 
-memory.add_user_message("What is my name")
-memory.add_ai_message(response.content)
+    memory.add_ai_message(response.content)
+    
+    history = ""
+    for msg in memory.messages:
+        # msg.type returns 'human' or 'ai'
+        speaker = "Human" if msg.type == "human" else "AI"
+        history += f"{speaker}: {msg.content}\n"
 
-print(response.content)
+    print(response.content)
