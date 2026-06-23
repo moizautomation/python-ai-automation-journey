@@ -1,44 +1,64 @@
-# Learning the Basics of Langchain Agents
-
-# this allow us to convert a normal function into an AI tool
 from langchain_core.tools import tool
-from langchain.agents import initialize_agent, AgentType
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain_google_genai import ChatGoogleGenerativeAI
 import os
 from dotenv import load_dotenv
-from langchain_google_genai import ChatGoogleGenerativeAI
 
 load_dotenv()
 
-model = ChatGoogleGenerativeAI(
-    model="gemini-2.5-flash"
-)
+model = ChatGoogleGenerativeAI(model="gemini-2.5-flash")
 
-# Creating the tool that agent can use
+# @tool
+# def add(a: int, b: int) -> int:
+#     """Adds two numbers together"""
+#     return a + b
+
+# bind tools directly to the model
+# model_with_tools = model.bind_tools([add])
+
+# invoke with a question
+# response = model_with_tools.invoke("What is 5 + 3?")
+
+# the ai output
+# print(response.content)
+
+# will show you exactly which tool it called and with what arguments
+# print(response.tool_calls)
+
+# TASK 1 (Tool Calling Agent)
 @tool
-# return integer
-def add(a: int, b: int) -> int:
-    # AI reads this to understand
-    # wgat the tool does
-    """Adds two numbers together"""
-    return a + b
+def calculator(a: int,b: int) -> int:
+    """Multiply two numbers"""
+    return (a * b) 
 
-#making the AI agent
-agent = initialize_agent(
+@tool
+def formatted(name : str) -> str:
+    """Create a welcome message"""
+    return (f"Welcome Back, {name}")
 
-    # give agent acess to the tool function
-    tools = [add],
+query = "What is 5 * 3"
 
-    # the brain of the agent
-    llm = model,
+model_with_tools = model.bind_tools([calculator, formatted])
 
-    # tells the agent to
-    # Use ReAct reasoning (Reason + Act + Observe)
-    agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
+response = model_with_tools.invoke(query)
 
-    # shows internal thinking process
-    verbose=True
+tool_calls = response.tool_calls[0]
+
+result = calculator.invoke(tool_calls["args"])
+
+prompt = ChatPromptTemplate.from_template("""
+        The calculator returned: {result}
+        Now give the final answer to the user question: {query}
+""")
+
+chain = prompt | model
+
+final_response = chain.invoke(
+    {
+        "result" : result,
+        "query" : query
+    }
 )
 
-response = agent.invoke("What is 5 + 3?")
+print("Final Answer:", final_response.content)
 
-print(response)
