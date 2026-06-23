@@ -1,6 +1,7 @@
 from langchain_core.tools import tool
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_community.tools import DuckDuckGoSearchRun
 import os
 from dotenv import load_dotenv
 
@@ -114,3 +115,52 @@ model = ChatGoogleGenerativeAI(model="gemini-2.5-flash")
 # )
 
 # print("Final Answer:", final_response.content)
+
+
+# TASK 3 (BUILD AGENT THAT Can Search WEB)
+
+
+search = DuckDuckGoSearchRun()
+
+# Runs a search query and returns the results as a plain string
+# result = search.run("latest AI news 2025")
+
+@tool 
+def web_search(query: str) -> str:
+    """Perform a web search for the given query"""
+    return search.run(query)
+
+query = "What is the temprature in Thailand"
+
+model_with_tools = model.bind_tools([web_search])
+
+response = model_with_tools.invoke(query)
+
+tools_map = {
+    "web_search" : web_search
+}
+results = []
+for tools_call in response.tool_calls:
+    tool_name = tools_call["name"]
+    tool_args = tools_call["args"]
+    result = tools_map[tool_name].invoke(tool_args)
+
+    results.append(f"{tool_name} returned: {result}")
+
+result = "\n".join(results)
+
+prompt = ChatPromptTemplate.from_template("""
+    Here is the result of the web search : {result}
+    Answer the following query of the User: {query}
+""")
+
+chain = prompt | model
+
+final_result = chain.invoke(
+    {
+        "result" : results,
+        "query" : query
+    }
+)
+
+print("Final Result: ",final_result.content)
