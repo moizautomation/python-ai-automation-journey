@@ -1,5 +1,8 @@
-from langgraph.graph import StateGraph
+from langgraph.graph import StateGraph,END
 from typing import TypedDict
+from langchain_core.messages import HumanMessage
+from langgraph.graph.message import add_messages
+from typing import Annotated
 from langgraph.prebuilt import ToolNode
 from langchain_core.tools import tool
 from langchain_community.tools import DuckDuckGoSearchRun
@@ -58,8 +61,7 @@ model = ChatGoogleGenerativeAI(
 # TASK 2 (BUILDING AGENT USING LANGGRAPH)
 
 class State(TypedDict):
-    question : str
-    answer : str
+    messages : Annotated[list, add_messages]
 
 search = DuckDuckGoSearchRun()
 
@@ -97,12 +99,20 @@ def web_scraper(url: str) -> str:
     return cleaned
 
 def chatbot(state):
-     response = model_with_tools.invoke(state["question"])
+     response = model_with_tools.invoke(state["messages"])
 
      return {
-          "answer" : response.content
+          "messages" : [response]
      }
 
+def should_continue(state):
+     last_message = state["messages"][-1]
+
+     if last_message.tool_calls:
+          return "tool"
+     
+     return END
+          
 tools = [calculator,web_search,web_scraper]
 
 model_with_tools = model.bind_tools(tools)
@@ -117,15 +127,23 @@ graph.add_node("Tool_node",tools_node)
 
 graph.set_entry_point("chatbot")
 
-graph.add_edge("chatbot","Tool_node")
+graph.add_conditional_edges(
+     "chatbot",
+     should_continue,
+     {
+        "tool" : "Tool_node",
+        END : END
+     }
+)
 
-graph.set_finish_point("Tool_node")
+graph.add_edge("Tool_node","chatbot")
+
 
 app = graph.compile()
 
 result = app.invoke(
      {
-        "question" : "Search what is python?"
+        "messages" : HumanMessage(content="Search What is Python?")
      }
 )
 
