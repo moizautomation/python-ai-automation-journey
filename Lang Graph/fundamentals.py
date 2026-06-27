@@ -1,5 +1,6 @@
 from langgraph.graph import StateGraph,END
 from typing import TypedDict
+from langgraph.checkpoint.memory import MemorySaver
 from langchain_core.messages import HumanMessage,AIMessage
 from langgraph.graph.message import add_messages
 from typing import Annotated
@@ -17,6 +18,9 @@ load_dotenv()
 model = ChatGoogleGenerativeAI(
     model="gemini-2.5-flash"
 )
+
+memory = MemorySaver()
+
 # TASK 1 (Creating a simple 2 Node Graph)
 
 # class State(TypedDict):
@@ -63,7 +67,7 @@ model = ChatGoogleGenerativeAI(
 class State(TypedDict):
     messages : Annotated[list, add_messages]
 
-search = DuckDuckGoSearchRun()
+# search = DuckDuckGoSearchRun()
 
 # @tool
 # def calculator(a: int,b: int) -> int:
@@ -122,7 +126,7 @@ def chatbot(state):
      }
 
 def should_continue(state):
-     last_message = state["messages"][0].content.lower()
+     last_message = state["messages"][-1].content.lower()
 
      if "multiply" in last_message:
           return "multiplication"
@@ -173,12 +177,39 @@ graph.add_edge("Multiply_Node",END)
 graph.add_edge("Subtraction_Node",END)
 
 
-app = graph.compile()
-
-result = app.invoke(
-     {
-        "messages" : HumanMessage(content="Multiply 5 and 3")
-     }
+app = graph.compile(
+    #save everything to the memory
+    checkpointer=memory
 )
 
-print(result["messages"])
+# result = app.invoke(
+#     {
+#         "messages" : [HumanMessage(content="Multiply 5 and 3")]
+#     },
+#     config={
+#         "configurable": {
+            #identifies the conversation
+            # in next run if it is 1, it will remember all the previous conversation
+            # if it changes to 2, a new conversation will start
+#             "thread_id": "1"
+#         }
+#     }
+     
+# )
+
+#  used for printing each and every step of the whole graph
+for event in app.stream(
+    {
+        "messages":[
+            HumanMessage(content="Multiply 5 and 6")
+        ]
+    },
+    config={
+        "configurable":{
+            "thread_id":"1"
+        }
+    }
+):
+    print(event)
+
+# print(result["messages"])
