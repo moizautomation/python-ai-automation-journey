@@ -1,6 +1,6 @@
 from langgraph.graph import StateGraph,END
 from typing import TypedDict
-from langchain_core.messages import HumanMessage
+from langchain_core.messages import HumanMessage,AIMessage
 from langgraph.graph.message import add_messages
 from typing import Annotated
 from langgraph.prebuilt import ToolNode
@@ -65,65 +65,95 @@ class State(TypedDict):
 
 search = DuckDuckGoSearchRun()
 
-@tool
-def calculator(a: int,b: int) -> int:
-    """Multiply two numbers"""
-    return (a * b) 
-@tool
-def web_search(query: str) -> str:
-    """Perform a web search for the given query"""
-    return search.run(query)
+# @tool
+# def calculator(a: int,b: int) -> int:
+#     """Multiply two numbers"""
+#     return (a * b) 
+# @tool
+# def web_search(query: str) -> str:
+#     """Perform a web search for the given query"""
+#     return {
+#         "message" : [search.run(query)]
+#     }
 
-@tool
-def web_scraper(url: str) -> str:
-    """Scrape the data of the website"""
-    cleaned = ""
-    if (url.startswith("http://") or url.startswith("https://")):
-        try:
-            r = requests.get(url,timeout=10)
-            if r.status_code != 200:
-                    return (f"Website {url} cannot be reached Error: {r.status_code}")
+# @tool
+# def web_scraper(url: str) -> str:
+#     """Scrape the data of the website"""
+#     cleaned = ""
+#     if (url.startswith("http://") or url.startswith("https://")):
+#         try:
+#             r = requests.get(url,timeout=10)
+#             if r.status_code != 200:
+#                     return (f"Website {url} cannot be reached Error: {r.status_code}")
 
             
-            soup = BeautifulSoup(r.text,"html.parser")
+#             soup = BeautifulSoup(r.text,"html.parser")
 
-            data = soup.find_all(["h1","h2","h3","h4","h5","h6","p"])
+#             data = soup.find_all(["h1","h2","h3","h4","h5","h6","p"])
                     
-            for el in data:
-                cleaned += el.text.strip() + "\n"
+#             for el in data:
+#                 cleaned += el.text.strip() + "\n"
 
-        except Exception as e:   
-            return str(e)
-    else:
-         return ("Invalid URL Provided")
-    return cleaned
+#         except Exception as e:   
+#             return str(e)
+#     else:
+#          return ("Invalid URL Provided")
+#     return cleaned
+def multiplication(state):
+     return {
+          "messages" : [AIMessage(content="Multiplication node reached")]
+     }
+
+def addition(state):
+     return {
+          "messages" : [AIMessage(content="Addition node reached")]
+     }
+
+def subtraction(state):
+     return {
+          "messages" : [AIMessage(content="Subtraction node reached")]
+     }
 
 def chatbot(state):
-     response = model_with_tools.invoke(state["messages"])
+    #  response = model_with_tools.invoke(state["messages"])
 
      return {
-          "messages" : [response]
+          "messages" : state["messages"]
      }
 
 def should_continue(state):
-     last_message = state["messages"][-1]
+     last_message = state["messages"][0].content.lower()
 
-     if last_message.tool_calls:
-          return "tool"
+     if "multiply" in last_message:
+          return "multiplication"
      
+     if "addition" in last_message:
+          return "addition"
+     
+     if "subtraction" in last_message:
+          return "subtraction"
+          
      return END
           
-tools = [calculator,web_search,web_scraper]
+# tools = [calculator,web_search,web_scraper]
 
-model_with_tools = model.bind_tools(tools)
+# tools = [multiply,add,subtract]
+
+# model_with_tools = model.bind_tools(tools)
 
 graph = StateGraph(State)
 
-tools_node = ToolNode(tools)
+# ToolNode = worker who actually does the calculation and brings back the result
+# tools_node = ToolNode(tools)
 
 graph.add_node("chatbot",chatbot)
 
-graph.add_node("Tool_node",tools_node)
+
+graph.add_node("Multiply_Node",multiplication)
+
+graph.add_node("Addition_Node",addition)
+
+graph.add_node("Subtraction_Node",subtraction)
 
 graph.set_entry_point("chatbot")
 
@@ -131,20 +161,24 @@ graph.add_conditional_edges(
      "chatbot",
      should_continue,
      {
-        "tool" : "Tool_node",
+        "addition" : "Addition_Node",
+        "multiplication" : "Multiply_Node",
+        "subtraction" : "Subtraction_Node",
         END : END
      }
 )
 
-graph.add_edge("Tool_node","chatbot")
+graph.add_edge("Addition_Node",END)
+graph.add_edge("Multiply_Node",END)
+graph.add_edge("Subtraction_Node",END)
 
 
 app = graph.compile()
 
 result = app.invoke(
      {
-        "messages" : HumanMessage(content="Search What is Python?")
+        "messages" : HumanMessage(content="Multiply 5 and 3")
      }
 )
 
-print(result)
+print(result["messages"])
