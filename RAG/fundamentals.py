@@ -1,6 +1,6 @@
 from langchain_community.document_loaders import PyPDFLoader
 
-loader = PyPDFLoader("python_notes.pdf")
+loader = PyPDFLoader("test.pdf")
 
 documents = loader.load()
 
